@@ -63,11 +63,11 @@
 }
 
 .card.card-team-member {
-  color: map-get($dates-theme-text, "dates-text-light");
+  color: dates-text-color(light);
 
   .card-header {
-    background-color: map-get($dates-theme, "dates-primary-1");
-    border-color: map-get($dates-theme, "dates-tertiary-5");
+    background-color: dates-theme-color(primary-1);
+    border-color: dates-theme-color(tertiary-5);
 
     .card-title {
       margin-bottom: 0;
@@ -75,7 +75,7 @@
   }
 
   .card-body {
-    background-color: map-get($dates-theme, "dates-primary-2");
+    background-color: dates-theme-color(primary-2);
     .row {
       align-items: center;
       &.image-left {

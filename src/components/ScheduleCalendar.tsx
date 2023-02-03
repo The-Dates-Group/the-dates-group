@@ -16,14 +16,15 @@
 import { useState } from 'react'
 import { Card, Spinner } from 'react-bootstrap'
 import IframeResizer from 'iframe-resizer-react'
+import styles from '@/styles/components/ScheduleCalendar.module.scss'
 
 export default function ScheduleCalendar() {
   const [state, setState] = useState({ loaded: false })
   const onIFrameLoaded = () => setState({ loaded: true })
-  return <div className="schedule-calendar">
+  return <div className={styles['schedule-calendar']}>
     {/* Loading spinner present before iFrame loads */}
     {state.loaded ? null : (
-      <div className="iframe-loading-spinner">
+      <div className={styles['iframe-loading-spinner']}>
         <Spinner animation="border"/>
       </div>
     )}

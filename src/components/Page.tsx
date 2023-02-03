@@ -19,6 +19,8 @@ import HeroImage from './HeroImage'
 import { Container } from 'react-bootstrap'
 import Head from 'next/head'
 
+import styles from '@/styles/components/Page.module.scss'
+
 export type PageProps = PropsWithChildren & {
   className?: string
   hero?: ElementType
@@ -32,7 +34,7 @@ const Page = (props: PageProps) =>
         <title>{props.title}</title>
       </Head>
     )}
-    <main className={classNames('page', props.className)}>
+    <main className={classNames(styles['page'], props.className)}>
       {!props.hero ? null : (
         <HeroImage>
           <props.hero/>
@@ -47,7 +49,7 @@ export type PageSectionProps = PropsWithChildren & {
 }
 
 export const PageSection = (props: PageSectionProps) =>
-  <Container as="section" className={classNames('page-section', props.className)}>
+  <Container as="section" className={classNames(styles['page-section'], props.className)}>
     {props.children}
   </Container>
 

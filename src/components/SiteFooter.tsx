@@ -15,7 +15,8 @@
  */
 import type { PropsWithChildren, ReactElement } from 'react'
 import { Col, Container, Nav, Row } from 'react-bootstrap'
-import socials from '../utils/constants/socials'
+import socials from '@/utils/constants/socials'
+import styles from '@/styles/components/SiteFooter.module.scss'
 
 type FooterLinkCategoryProps = PropsWithChildren & {
   title: string
@@ -39,15 +40,15 @@ const FooterLinkCategory = (props: FooterLinkCategoryProps) =>
   </Col>
 
 const FooterLink = (props: FooterLinkProps) =>
-  <Nav.Item as="li" className="footer-item">
-    <Nav.Link href={props.href} className="footer-link" rel={props.rel} target={props.target}>
+  <Nav.Item as="li" className={styles['footer-item']}>
+    <Nav.Link href={props.href} className={styles['footer-link']} rel={props.rel} target={props.target}>
       {props.icon}
       {props.label}
     </Nav.Link>
   </Nav.Item>
 
 const SiteFooter = () =>
-  <Container fluid as="footer" className="site-footer">
+  <Container fluid as="footer" className={styles['site-footer']}>
     <Row>
       <Col xs="auto" sm={6} md={7} xl={8} xxl={9} className="p-0 p-sm-2"/>
       <FooterLinkCategory title="Links">
