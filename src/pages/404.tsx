@@ -13,16 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Head, Html, Main, NextScript } from 'next/document'
+import React from 'react'
+import Page from '../components/Page'
 
-export default function Document() {
-  return (
-    <Html lang="en">
-      <Head/>
-      <body>
-        <Main/>
-        <NextScript/>
-      </body>
-    </Html>
-  )
-}
+const NotFoundPage = () =>
+  <Page title="Not Found">
+    Not Found
+  </Page>
+
+export default NotFoundPage

@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Head, Html, Main, NextScript } from 'next/document'
+import { Spinner } from 'react-bootstrap'
+import classNames from 'classnames'
 
-export default function Document() {
-  return (
-    <Html lang="en">
-      <Head/>
-      <body>
-        <Main/>
-        <NextScript/>
-      </body>
-    </Html>
-  )
+type LoadingSpinnerProps = {
+  className?: string
 }
+
+const LoadingSpinner = (props: LoadingSpinnerProps) =>
+  <div className={classNames('loading-spinner', props.className)}>
+    <Spinner animation="border"/>
+  </div>
+
+export default LoadingSpinner

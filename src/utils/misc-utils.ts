@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Head, Html, Main, NextScript } from 'next/document'
 
-export default function Document() {
-  return (
-    <Html lang="en">
-      <Head/>
-      <body>
-        <Main/>
-        <NextScript/>
-      </body>
-    </Html>
-  )
+/**
+ * Maps a number of `T` using `mapFn` for every `i` between 0 (inclusive) and `n` (exclusive)
+ *
+ * @param n the number of elements to map
+ * @param mapFn the function to map with
+ */
+export function mapConsecutively<T>(n: number, mapFn: (i: number) => T): T[] {
+  const out = [] as T[]
+  for(let i = 0; i < n; i++)
+    out.push(mapFn(i))
+  return out
 }

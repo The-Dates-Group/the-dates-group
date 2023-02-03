@@ -1,0 +1,26 @@
+# JavaScript and TypeScript
+*.js text eol=lf
+*.jsx text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+
+# JSON
+*.json text eol=lf
+*.jsonc text eol=lf
+
+# HTML and Stylesheets
+*.html text eol=lf
+*.css text eol=lf
+*.sass text eol=lf
+*.scss text eol=lf
+
+# XML and SVGs
+*.xml text eol=lf
+*.svg text eol=lf
+
+# Git
+.gitignore text eol=lf
+.gitattributes text eol=lf
+
+# EditorConfig
+.editorconfig text eol=lf

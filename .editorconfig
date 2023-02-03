@@ -1,0 +1,24 @@
+root = true
+
+# All Files
+[*]
+insert_final_newline = true
+trim_trailing_whitespace = true
+charset = utf-8
+
+# JSON Files
+[*.json]
+indent_size = 2
+indent_style = space
+end_of_line = lf
+
+# HTML, XML and SVGs
+[*.{html, xml, svg}]
+indent_size = 2
+indent_style = space
+end_of_line = lf
+
+# Override XML for .idea directory
+[.idea/**/*.xml]
+insert_final_newline = false
+end_of_line = crlf

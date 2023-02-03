@@ -13,16 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Head, Html, Main, NextScript } from 'next/document'
 
-export default function Document() {
-  return (
-    <Html lang="en">
-      <Head/>
-      <body>
-        <Main/>
-        <NextScript/>
-      </body>
-    </Html>
-  )
-}
+// noinspection RegExpRedundantEscape
+export const emailRegex =
+  /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/

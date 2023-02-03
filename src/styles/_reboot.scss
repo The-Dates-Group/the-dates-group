@@ -1,0 +1,95 @@
+/*
+ * Copyright 2023 Kaidan Gustave
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// navbar variable overrides
+$navbar-dark-color: map-get($dates-theme-text, "dates-text-light");
+$navbar-dark-hover-color: map-get($dates-theme-text, "dates-text-light-2");
+$navbar-dark-brand-color: map-get($dates-theme-text, "dates-text-light");
+$navbar-dark-brand-hover-color: map-get($dates-theme-text, "dates-text-light");
+$navbar-toggler-padding-x: 0.5rem;
+
+// nav variable overrides
+$nav-link-color: map-get($dates-theme-text, 'dates-text-dark');
+$nav-link-hover-color: map-get($dates-theme-text, 'dates-text-dark-1');
+
+// nav tabs variable overrides
+$nav-tabs-border-color: map-get($dates-theme, "dates-primary");
+$nav-tabs-link-hover-border-color: map-get($dates-theme, "dates-primary-2");
+$nav-tabs-link-active-color: map-get($dates-theme-text, "dates-text-light-2");
+$nav-tabs-link-active-bg: map-get($dates-theme, "dates-primary-2");
+$nav-tabs-link-active-border-color: map-get($dates-theme, "dates-primary-1");
+
+// accordion variable overrides
+$accordion-button-color: map-get($dates-theme-text, "dates-text-light");
+$accordion-button-active-color: $accordion-button-color;
+$accordion-button-bg: map-get($dates-theme, "dates-primary");
+$accordion-button-active-bg: map-get($dates-theme, "dates-primary-2");
+$accordion-button-focus-box-shadow: 0 0 0 0.25rem transparentize(map-get($dates-theme, "dates-primary"), 0.75);
+$accordion-icon-color: map-get($dates-theme-text, "dates-text-light");
+$accordion-icon-active-color: map-get($dates-theme-text, "dates-text-light");
+
+// reboot
+@import "~bootstrap/scss/bootstrap-reboot";
+
+// utilities
+@import "~bootstrap/scss/utilities";
+
+// Layout & components
+@import "~bootstrap/scss/type";
+@import "~bootstrap/scss/images"; // required
+@import "~bootstrap/scss/containers"; // required
+@import "~bootstrap/scss/grid"; // required
+//@import "bootstrap/scss/tables";
+@import "~bootstrap/scss/forms"; // required
+@import "~bootstrap/scss/buttons"; // required
+@import "~bootstrap/scss/transitions"; // required
+@import "~bootstrap/scss/dropdown"; // required
+//@import "bootstrap/scss/button-group";
+@import "~bootstrap/scss/nav"; // required
+@import "~bootstrap/scss/navbar"; // required
+@import "~bootstrap/scss/card"; // required
+@import "~bootstrap/scss/accordion"; // required
+//@import "bootstrap/scss/breadcrumb";
+//@import "bootstrap/scss/pagination";
+//@import "bootstrap/scss/badge";
+//@import "bootstrap/scss/alert";
+//@import "bootstrap/scss/progress";
+//@import "bootstrap/scss/list-group";
+//@import "bootstrap/scss/close";
+//@import "bootstrap/scss/toasts";
+//@import "bootstrap/scss/modal";
+//@import "bootstrap/scss/tooltip";
+//@import "bootstrap/scss/popover";
+@import "~bootstrap/scss/carousel"; // required
+@import "~bootstrap/scss/spinners"; // required
+//@import "bootstrap/scss/offcanvas";
+//@import "bootstrap/scss/placeholders";
+
+// Helpers
+@import "~bootstrap/scss/helpers";
+
+// Utilities
+@import "~bootstrap/scss/utilities/api";
+
+.fade {
+  @include transition(0.75s opacity 0.1s ease-in);
+}
+
+.collapsing {
+  &.collapse-horizontal {
+    @include transition(width 0.75s ease);
+  }
+}

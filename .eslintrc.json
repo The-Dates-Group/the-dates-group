@@ -1,3 +1,36 @@
 {
-  "extends": "next/core-web-vitals"
+  "extends": [
+    "next/core-web-vitals"
+  ],
+  "root": true,
+  "ignorePatterns": [
+    "node_modules"
+  ],
+  "rules": {
+    "react/no-unescaped-entities": "off",
+    "semi": ["warn", "never"],
+    "semi-spacing": ["error", {"before": false}],
+    "indent": ["warn", 2, {"SwitchCase": 1}],
+    "quotes": ["warn", "single", {"avoidEscape": true, "allowTemplateLiterals": true}],
+    "quote-props": ["warn", "as-needed"],
+    "comma-dangle": ["warn", "never"],
+    "comma-spacing": ["warn", {"before": false, "after": true}],
+    "no-trailing-spaces": ["warn", {"skipBlankLines": false, "ignoreComments": false}],
+    "space-before-function-paren": ["warn", {"anonymous": "always", "named": "never"}],
+    "object-curly-spacing": ["warn", "always"],
+    "keyword-spacing": [
+      "warn", {
+        "overrides": {
+          "if": {"after": false},
+          "for": {"after": false},
+          "try": {"after": true},
+          "catch": {"after": false},
+          "switch": {"after": false}
+        }
+      }
+    ],
+    "linebreak-style": ["error", "unix"],
+    "eol-last": ["error", "always"],
+    "no-multiple-empty-lines": ["warn", {"max": 2, "maxEOF": 0, "maxBOF": 0}]
+  }
 }

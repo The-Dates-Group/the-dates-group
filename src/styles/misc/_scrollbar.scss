@@ -13,16 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Head, Html, Main, NextScript } from 'next/document'
 
-export default function Document() {
-  return (
-    <Html lang="en">
-      <Head/>
-      <body>
-        <Main/>
-        <NextScript/>
-      </body>
-    </Html>
-  )
+//noinspection CssUnknownProperty
+* {
+  /* Firefox */
+  scrollbar-width: auto;
+  scrollbar-color: #bababa #ffffff;
+
+  /* Chrome, Edge, and Safari */
+  &::-webkit-scrollbar {
+    width: 12px;
+    &-track {
+      background: #ffffff;
+    }
+    &-thumb {
+      background-color: #bababa;
+      border-radius: 10px;
+      border: 3px solid #ffffff;
+    }
+  }
 }

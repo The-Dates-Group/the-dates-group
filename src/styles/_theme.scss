@@ -1,0 +1,99 @@
+/*
+ * Copyright 2023 Kaidan Gustave
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// light and dark text classes
+@each $type in ['light', 'dark'] {
+  .dates-text-#{$type} {
+    color: dates-text-color($type);
+  }
+
+  @for $level from 1 to 6 {
+    .dates-text-#{$type}-#{$level} {
+      color: dates-text-color($type, $level);
+    }
+  }
+}
+
+// background and border utility classes
+@each $type in ['primary', 'secondary', 'tertiary'] {
+  .dates-bg-#{$type} {
+    background-color: dates-theme-color($type);
+  }
+  .dates-border-#{$type} {
+    border-color: dates-theme-color($type);
+  }
+  @for $level from 1 to 6 {
+    $color: dates-theme-color($type, $level);
+    .dates-bg-#{$type}-#{$level} {
+      background-color: $color;
+    }
+    .dates-border-#{$type}-#{$level} {
+      border-color: $color;
+    }
+  }
+}
+
+// button variant
+.btn-dates-primary {
+  @include button-variant(
+      dates-theme-color(primary),
+      dates-theme-color(primary),
+      dates-text-color(light),
+      dates-theme-color(primary-2),
+      dates-theme-color(primary),
+      dates-text-color(light),
+      dates-theme-color(primary-2),
+      dates-theme-color(primary),
+      dates-text-color(light)
+  )
+}
+
+.btn-dropdown {
+  background-color: transparent;
+  border: none !important;
+  color: inherit;
+  display: flex;
+  position: relative;
+  justify-content: space-around;
+  align-items: center;
+
+  $arrow-size: 20px;
+
+  // the space between & and :last-child is important!
+  & :last-child {
+    margin-right: $arrow-size;
+    margin-left: $arrow-size;
+  }
+
+  &::after {
+    content: "";
+    position:absolute;
+    right: 0;
+    width: $arrow-size;
+    height: $arrow-size;
+    background-size: $arrow-size;
+    background-repeat: no-repeat;
+    background-image: escape-svg($accordion-button-icon);
+    @include transition(transform .2s ease-in-out);
+  }
+
+  &:not(.collapsed) {
+    &::after {
+      transform: rotate(-180deg) !important;
+    }
+  }
+}
+

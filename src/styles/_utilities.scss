@@ -13,16 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Head, Html, Main, NextScript } from 'next/document'
-
-export default function Document() {
-  return (
-    <Html lang="en">
-      <Head/>
-      <body>
-        <Main/>
-        <NextScript/>
-      </body>
-    </Html>
-  )
+@each $key, $value in $spacers {
+  @each $breakpoint in map-keys($grid-breakpoints) {
+    @include media-breakpoint-up($breakpoint) {
+      $infix: breakpoint-infix($breakpoint, $grid-breakpoints);
+      // Ex: gap-horizontal-md-4
+      .gap-horizontal#{$infix}-#{$key} {
+        @include gap-horizontal($value);
+      }
+      // Ex: gap-vertical-lg-2
+      .gap-vertical#{$infix}-#{$key} {
+        @include gap-vertical($value);
+      }
+    }
+  }
 }

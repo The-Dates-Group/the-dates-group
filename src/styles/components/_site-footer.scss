@@ -13,16 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Head, Html, Main, NextScript } from 'next/document'
+.site-footer {
+  background-color: dates-theme-color(primary);
+  color: dates-text-color(light);
+  padding-top: 1.25rem;
+  padding-bottom: 1rem;
 
-export default function Document() {
-  return (
-    <Html lang="en">
-      <Head/>
-      <body>
-        <Main/>
-        <NextScript/>
-      </body>
-    </Html>
-  )
+  .footer-item {
+    margin-bottom: 0.5rem;
+    align-items: center;
+    position: relative;
+    .footer-link {
+      padding: 0;
+      color: dates-text-color(light);
+      &:hover {
+        color: dates-text-color(light-2);
+      }
+    }
+  }
 }

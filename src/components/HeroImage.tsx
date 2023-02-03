@@ -13,16 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Head, Html, Main, NextScript } from 'next/document'
+import { PropsWithChildren } from 'react'
+import { Container, Fade } from 'react-bootstrap'
+import classNames from 'classnames'
 
-export default function Document() {
-  return (
-    <Html lang="en">
-      <Head/>
-      <body>
-        <Main/>
-        <NextScript/>
-      </body>
-    </Html>
-  )
-}
+export type HeroImageProps = PropsWithChildren & { className?: string, noFade?: boolean }
+const HeroImage = (props: HeroImageProps) =>
+  <div className={classNames('hero-image', props.className)}>
+    {!props.children || props.noFade ? props.children : (
+      <Fade appear={true} in={true} timeout={1000}>
+        <Container>
+          {props.children}
+        </Container>
+      </Fade>
+    )}
+  </div>
+
+export default HeroImage

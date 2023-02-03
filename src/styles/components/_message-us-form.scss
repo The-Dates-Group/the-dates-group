@@ -13,16 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Head, Html, Main, NextScript } from 'next/document'
+.message-us-form {
+  // height sized when loading component lazily
+  &.loading-spinner {
+    min-height: calc(678px + (16px * 2));
+    @include media-breakpoint-up(md) {
+      min-height: calc(534px + (16px * 2));
+    }
+  }
 
-export default function Document() {
-  return (
-    <Html lang="en">
-      <Head/>
-      <body>
-        <Main/>
-        <NextScript/>
-      </body>
-    </Html>
-  )
+  display: flex;
+  flex-direction: column;
+  textarea.form-control {
+    height: 370px;
+    resize: none;
+  }
 }

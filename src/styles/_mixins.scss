@@ -1,0 +1,62 @@
+/*
+ * Copyright 2023 Kaidan Gustave
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+@mixin all-child-but-first() {
+  // NOTE: the lack of a space
+  & > *:not(:first-child) {
+    @content;
+  }
+}
+
+@mixin all-child-but-last() {
+  // NOTE: the lack of a space
+  & > *:not(:last-child) {
+    @content;
+  }
+}
+
+@mixin gap-vertical($spacer: $spacer) {
+  @include all-child-but-last {
+    @if($spacer == 0) {
+      margin-bottom: 0 !important;
+    } @else {
+      margin-bottom: $spacer;
+    }
+  }
+  @include all-child-but-first {
+    @if($spacer == 0) {
+      margin-top: 0 !important;
+    } @else {
+      margin-top: $spacer;
+    }
+  }
+}
+
+@mixin gap-horizontal($spacer: $spacer) {
+  @include all-child-but-last {
+    @if($spacer == 0) {
+      margin-right: 0 !important;
+    } @else {
+      margin-right: $spacer;
+    }
+  }
+  @include all-child-but-first {
+    @if($spacer == 0) {
+      margin-left: 0 !important;
+    } @else {
+      margin-left: $spacer;
+    }
+  }
+}
