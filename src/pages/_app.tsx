@@ -16,6 +16,8 @@
 import { Suspense } from 'react'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
+import axios from 'axios'
+import { Requester } from '@/components/hooks/useRequest'
 import SiteFooter from '@/components/SiteFooter'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import SiteNavigation from '@/components/SiteNavigation'
@@ -23,7 +25,7 @@ import { SSRProvider } from '@react-aria/ssr'
 import meta from '@/data/meta.json'
 import '@/styles/index.scss'
 
-type AppHeadTagProps = { name: string, description: string, deploymentUrl: string }
+type AppHeadTagProps = { name: string, description: string, deploymentUrl: string, themeColor: string }
 const AppHeadTag = (props: AppHeadTagProps) =>
   <Head>
     <meta charSet="utf-8"/>
@@ -33,7 +35,7 @@ const AppHeadTag = (props: AppHeadTagProps) =>
     <title>The Dates Group</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <meta name="theme-color" content="#3b0041"/>
+    <meta name="theme-color" content={props.themeColor}/>
     <meta name="description" content={props.description}/>
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"/>
 
@@ -51,24 +53,33 @@ const AppHeadTag = (props: AppHeadTagProps) =>
   </Head>
 
 export default function App({ Component, pageProps }: AppProps) {
+  const requester = axios.create({
+    headers: {
+      'Content-Type': 'Application/Json'
+    }
+  })
+
   return (
     <SSRProvider>
-      <AppHeadTag
-        name={meta.name}
-        description={meta.description}
-        deploymentUrl={process.env.NODE_ENV === 'production' ? meta.publicUrl : 'http://localhost:3000'}
-      />
-      <SiteNavigation>
-        <SiteNavigation.Item href="/" label="Home"/>
-        <SiteNavigation.Item href="/services" label="Services"/>
-        <SiteNavigation.Item href="/contact" label="Contact"/>
-        <SiteNavigation.Item href="/about-us" label="About Us"/>
-        <SiteNavigation.Item href="/faqs" label="FAQs"/>
-      </SiteNavigation>
-      <Suspense fallback={<LoadingSpinner/>}>
-        <Component {...pageProps}/>
-      </Suspense>
-      <SiteFooter/>
+      <Requester.Provider axios={requester}>
+        <AppHeadTag
+          name={meta.name}
+          description={meta.description}
+          deploymentUrl={process.env.NODE_ENV === 'production' ? meta.publicUrl : 'http://localhost:3000'}
+          themeColor={meta.themeColor}
+        />
+        <SiteNavigation>
+          <SiteNavigation.Item href="/" label="Home"/>
+          <SiteNavigation.Item href="/services" label="Services"/>
+          <SiteNavigation.Item href="/contact" label="Contact"/>
+          <SiteNavigation.Item href="/about-us" label="About Us"/>
+          <SiteNavigation.Item href="/faqs" label="FAQs"/>
+        </SiteNavigation>
+        <Suspense fallback={<LoadingSpinner/>}>
+          <Component {...pageProps}/>
+        </Suspense>
+        <SiteFooter/>
+      </Requester.Provider>
     </SSRProvider>
   )
 }

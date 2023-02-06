@@ -15,8 +15,10 @@
  */
 import { ChangeEvent, Children, PropsWithChildren, useEffect, useState } from 'react'
 import { Button, Card, Col, Collapse, Form, InputGroup, Row } from 'react-bootstrap'
+import type { MessageUsPost } from '@/lib/common/data-types'
 import { emailRegex } from '@/utils/regexes'
 import { useUnfocus } from '@/components/hooks/useFocus'
+import { usePOST } from '@/components/hooks/useRequest'
 
 type FieldData = {
   readonly value: string
@@ -62,15 +64,18 @@ const validateMessage = (message: string): string | undefined => {
   if(message.length < 1) return 'Please provide a message'
 }
 
+const defaultState = {
+  name: { value: '' },
+  email: { value: '' },
+  subject: { value: '' },
+  message: { value: '' },
+  forceValidate: false,
+  submitted: false
+}
+
 export default function MessageUsForm() {
-  const [state, setState] = useState<MessageUsFormState>({
-    name: { value: '' },
-    email: { value: '' },
-    subject: { value: '' },
-    message: { value: '' },
-    forceValidate: false,
-    submitted: false
-  })
+  const [state, setState] = useState<MessageUsFormState>(defaultState)
+  const [request, response] = usePOST<MessageUsPost>('/api/message-us')
 
   // this is a weird effect used as a hack to force validationErrors of the child fields to render on submit
   const onSubmit = () => setState(prevState => ({ ...prevState, forceValidate: true }))
@@ -81,9 +86,17 @@ export default function MessageUsForm() {
         setState(prevState => ({ ...prevState, submitted: true }))
       } else {
         // ... and then, the validations are passed to here
-        // TODO post validation and send data
-        // reset forceValidate and submitted to avoid this effect triggering again when fields are changed
-        setState(prevState => ({ ...prevState, forceValidate: false, submitted: false }))
+        request.exec({
+          name: state.name.value,
+          email: state.email.value,
+          subject: state.subject.value,
+          message: state.message.value
+        }).then(() => {
+          // reset forceValidate and submitted to avoid this effect triggering again when fields are changed
+          setState(() => ({ ...defaultState }))
+        }).catch(() => {
+          setState(() => ({ ...defaultState }))
+        })
       }
     }
     // eslint-disable-next-line
@@ -141,6 +154,11 @@ export default function MessageUsForm() {
       </FormRow>
       <FormRow>
         <Button variant="dates-primary" onClick={onSubmit}>Submit</Button>
+        <Collapse in={response.isComplete && !response.isSuccess}>
+          <div>
+            {response.isComplete && !response.isSuccess ? response.error.message : 'test'}
+          </div>
+        </Collapse>
       </FormRow>
     </Form>
   )
