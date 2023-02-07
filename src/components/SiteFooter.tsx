@@ -32,8 +32,8 @@ type FooterLinkProps = {
 
 const FooterLinkCategory = (props: FooterLinkCategoryProps) =>
   <Col>
-    {/* use span with h4 class help with assistive technologies */}
-    <span className="h5 text-decoration-underline">{props.title}</span>
+    {/* use span with h5 class help with assistive technologies */}
+    <span className="h5">{props.title}</span>
     <Nav as="ol" className="flex-column mt-2">
       {props.children}
     </Nav>
@@ -53,10 +53,10 @@ const SiteFooter = () =>
       <Col xs="auto" sm={6} md={7} xl={8} xxl={9} className="p-0 p-sm-2"/>
       <FooterLinkCategory title="Links">
         <FooterLink href="/" label="Home" rel="alternate"/>
-        <FooterLink href="/services" label="Services" rel="alternate"/>
-        <FooterLink href="/contact" label="Contact" rel="alternate"/>
-        <FooterLink href="/about-us" label="About Us" rel="alternate"/>
-        <FooterLink href="/faqs" label="FAQs" rel="alternate"/>
+        <FooterLink href="/services" label="Services" rel="alternate" target="_self"/>
+        <FooterLink href="/contact" label="Contact" rel="alternate" target="_self"/>
+        <FooterLink href="/about-us" label="About Us" rel="alternate" target="_self"/>
+        <FooterLink href="/faqs" label="FAQs" rel="alternate" target="_self"/>
       </FooterLinkCategory>
       <FooterLinkCategory title="Social Media">
         {socials.map(({ link, type, BsIcon }) =>

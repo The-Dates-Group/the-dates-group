@@ -71,7 +71,7 @@ class ResponseHookImpl<T> implements ResponseHook<T> {
   }
 }
 
-class RequestHookImpl<T, B> implements RequestHook<T, B> {
+class RequestHookImpl<B, T> implements RequestHook<B, T> {
   private readonly requester: Requester
   private readonly setResponse: Dispatch<SetStateAction<ResponseHook<T>>>
   readonly method: Method
@@ -113,11 +113,11 @@ class RequestHookImpl<T, B> implements RequestHook<T, B> {
 
 export type RequestProviderProps = PropsWithChildren<{ axios?: AxiosInstance }>
 
-export type RequestHookValue<T, B> = [request: RequestHook<T, B>, response: ResponseHook<T>]
+export type RequestHookValue<B, T> = [request: RequestHook<B, T>, response: ResponseHook<T>]
 
 // Interfaces
 
-export interface RequestHook<T, B> {
+export interface RequestHook<B, T> {
   readonly method: Method
   readonly url: string
 
@@ -149,10 +149,10 @@ export class Requester {
 
 // Module Default
 
-export default function useRequest<B, T>(method: Method, url: string): RequestHookValue<T, B> {
+export default function useRequest<B, T>(method: Method, url: string): RequestHookValue<B, T> {
   const requester = useRequester()
   const [response, setResponse] = useState<ResponseHook<T>>(ResponseHookImpl.incomplete as ResponseHook<T>)
-  const request = new RequestHookImpl<T, B>(requester, setResponse, method, url)
+  const request = new RequestHookImpl<B, T>(requester, setResponse, method, url)
   return [request, response]
 }
 
@@ -162,7 +162,7 @@ export const useGET =
   <T extends object>(url: string): RequestHookValue<T, undefined> => useRequest('GET', url)
 
 export const usePOST =
-  <B extends object, T extends any = any>(url: string): RequestHookValue<T, B> => useRequest('POST', url)
+  <B extends object, T extends any = any>(url: string): RequestHookValue<B, T> => useRequest('POST', url)
 
 export const useDELETE =
-  <B extends any = any, T extends any = any>(url: string): RequestHookValue<T, B> => useRequest('DELETE', url)
+  <B extends any = any, T extends any = any>(url: string): RequestHookValue<B, T> => useRequest('DELETE', url)

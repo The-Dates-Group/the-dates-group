@@ -13,20 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import "../variables";
-@import "../functions";
-
-.page {
-  min-height: 68.8vh;
-  padding-bottom: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  background-color: dates-theme-color(secondary-5);
-
-  .page-section {
-    margin-top: auto;
-    margin-bottom: auto;
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
-  }
-}
+@import "node_modules/bootstrap/scss/functions";
+@import "node_modules/bootstrap/scss/variables";
+@import "node_modules/bootstrap/scss/mixins/breakpoints";

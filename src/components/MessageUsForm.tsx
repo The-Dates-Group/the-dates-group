@@ -108,7 +108,7 @@ export default function MessageUsForm() {
   const setMessage = (message: FieldData) => setState(prevState => ({ ...prevState, message }))
 
   return (
-    <Form as={Card.Body} className="message-us-form gap-vertical-4">
+    <Form as={Card.Body} className="d-flex flex-column gap-vertical-4">
       <FormRow>
         <FormField
           label="Name"
@@ -214,6 +214,7 @@ function FormField({ data, setData, label, as, type, placeholder, validate, forc
           placeholder={placeholder}
           value={data.value}
           onChange={onChange}
+          style={as === 'textarea' ? { resize: 'none', height: '370px' } : undefined}
         />
         <Collapse in={data.validationError ? data.validationError.length > 0 : false}>
           <Form.Control.Feedback type="invalid">

@@ -13,17 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { Suspense } from 'react'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
 import axios from 'axios'
+import { SSRProvider } from '@react-aria/ssr'
+
+// NOTE: global styles need to be delivered first!
+import '@/styles/index.scss'
+
 import { Requester } from '@/components/hooks/useRequest'
+import SiteNavigation from '@/components/SiteNavigation'
 import SiteFooter from '@/components/SiteFooter'
 import LoadingSpinner from '@/components/LoadingSpinner'
-import SiteNavigation from '@/components/SiteNavigation'
-import { SSRProvider } from '@react-aria/ssr'
+
 import meta from '@/data/meta.json'
-import '@/styles/index.scss'
 
 type AppHeadTagProps = { name: string, description: string, deploymentUrl: string, themeColor: string }
 const AppHeadTag = (props: AppHeadTagProps) =>

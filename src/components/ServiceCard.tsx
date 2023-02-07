@@ -25,9 +25,9 @@ export type ServiceCardProps = PropsWithChildren & {
 
 const ServiceCard = (props: ServiceCardProps) =>
   <Card className="card-service align-self-stretch flex-fill">
-    <Card.Body className="d-flex">
-      <Card.Title as="h2">
-        <a href={props.service.href}>{props.service.title}</a>
+    <Card.Body className="d-flex align-items-center justify-content-center">
+      <Card.Title as="h2" className="h3 text-center mb-0">
+        <a href={props.service.href} className="stretched-link">{props.service.title}</a>
       </Card.Title>
       <Card.Text>{props.children}</Card.Text>
     </Card.Body>

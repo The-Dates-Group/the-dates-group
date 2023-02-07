@@ -20,64 +20,45 @@
   }
 }
 
-.card.card-clear {
+.card-clear {
   background: transparentize(#fff, 0.10);
   border: none;
 }
 
-.card.card-service {
+.card-service {
   min-height: 150px;
   background-color: dates-theme-color(primary-2);
   border-color: dates-theme-color(primary);
   border-width: 0.1rem;
-  transition: ease-in-out 0.15s;
+  @include transition(ease-in-out 0.25s);
   &:hover {
     background-color: dates-theme-color(primary-3);
   }
   .card-body {
-    align-items: center;
-    justify-content: center;
     .card-title {
-      @extend h3;
-      text-align: center;
-      margin-bottom: 0;
       a {
-        @include transition(color 0.25s, ease-in-out);
+        @include transition(color 0.25s ease-in-out);
         color: dates-text-color(light-1);
         text-decoration: none;
         &:hover {
           color: dates-text-color(light);
-        }
-        &::after {
-          position: absolute;
-          top: 0;
-          right: 0;
-          bottom: 0;
-          left: 0;
-          z-index: 1;
-          content: "";
         }
       }
     }
   }
 }
 
-.card.card-team-member {
+.card-team-member {
   color: dates-text-color(light);
 
   .card-header {
     background-color: dates-theme-color(primary-1);
     border-color: dates-theme-color(tertiary-5);
-
-    .card-title {
-      margin-bottom: 0;
-    }
   }
 
   .card-body {
     background-color: dates-theme-color(primary-2);
     .row {
-      align-items: center;
       &.image-left {
         flex-direction: column;
       }

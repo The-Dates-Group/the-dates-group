@@ -26,6 +26,7 @@ const TeamMemberImage = (props: TeamMemberImageProps) =>
       src={props.src}
       alt={`${props.name} photo`}
       className="card-img placeholder"
+      priority={props.noLazy}
       loading={props.noLazy ? 'eager' : 'lazy'}/>
   </div>
 
@@ -79,12 +80,12 @@ export default function TeamMemberCard(props: TeamMemberCardProps) {
   return (
     <Card className="card-team-member">
       <Card.Header>
-        <Card.Title as="h2">
+        <Card.Title as="h2" className="mb-0">
           {props.name}
         </Card.Title>
       </Card.Header>
       <Card.Body className="rounded-bottom">
-        <Row xs={1} lg={2} className={classNames(props.direction, 'flex-lg-row')}>
+        <Row xs={1} lg={2} className={classNames(props.direction, 'align-items-center', 'flex-lg-row')}>
           <Col lg={props.direction === 'image-left' ? 5 : 7}>
             {props.direction === 'image-left' ?
               <TeamMemberImage src={props.src} name={props.name} noLazy={props.noLazy}/> :

@@ -15,14 +15,13 @@
  */
 import { Spinner } from 'react-bootstrap'
 import classNames from 'classnames'
-import styles from '@/styles/components/LoadingSpinner.module.scss'
 
 type LoadingSpinnerProps = {
   className?: string
 }
 
 const LoadingSpinner = (props: LoadingSpinnerProps) =>
-  <div className={classNames(styles['loading-spinner'], props.className)}>
+  <div className={classNames('d-flex', 'justify-content-around', 'align-items-center', props.className)}>
     <Spinner animation="border"/>
   </div>
 

@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Card, Nav, Tab } from 'react-bootstrap'
 import Page, { PageSection } from '@/components/Page'
-import LoadingSpinner from '@/components/LoadingSpinner'
+import MessageUsForm from '@/components/MessageUsForm'
+import ScheduleCalendar from '@/components/ScheduleCalendar'
 
 type TabKey = 'send-a-message' | 'schedule-a-call'
 
@@ -34,12 +35,12 @@ const tabs = [
   {
     title: 'Send A Message',
     key: 'send-a-message',
-    render: lazy(() => import('@/components/MessageUsForm'))
+    render: MessageUsForm
   },
   {
     title: 'Schedule A Call',
     key: 'schedule-a-call',
-    render: lazy(() => import('@/components/ScheduleCalendar'))
+    render: ScheduleCalendar
   }
 ]
 
@@ -60,20 +61,18 @@ export default function ContactPage() {
             onSelect={handleTabSelected}
             generateChildId={(eventKey, type) => `${eventKey}-${type}`}>
             <Nav fill variant="tabs" as="ul">
-              {tabs.map((tab, index) => (
-                <Nav.Item key={`tab-nav-${index}`} as="li" role="presentation">
+              {tabs.map((tab, index) =>
+                <Nav.Item as="li" key={`tab-nav-${index}`} role="presentation">
                   <Nav.Link eventKey={tab.key} as="button">{tab.title}</Nav.Link>
                 </Nav.Item>
-              ))}
+              )}
             </Nav>
             <Tab.Content>
-              {tabs.map((tab, index) => (
-                <Tab.Pane active={key === tab.key} key={`tab-pane-${index}`} eventKey={tab.key}>
-                  <Suspense fallback={<LoadingSpinner className="message-us-form"/>}>
-                    <tab.render/>
-                  </Suspense>
+              {tabs.map((tab, index) =>
+                <Tab.Pane key={`tab-pane-${index}`} active={key === tab.key} eventKey={tab.key}>
+                  <tab.render/>
                 </Tab.Pane>
-              ))}
+              )}
             </Tab.Content>
           </Tab.Container>
         </Card>

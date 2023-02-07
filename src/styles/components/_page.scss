@@ -13,19 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-.message-us-form {
-  // height sized when loading component lazily
-  &.loading-spinner {
-    min-height: calc(678px + (16px * 2));
-    @include media-breakpoint-up(md) {
-      min-height: calc(534px + (16px * 2));
-    }
-  }
+.page {
+  // by requiring the minimum height of the page content to take up a
+  //sizable chunk of the viewport, we push the footer below the viewable
+  //first contentful paint and prevent content shifting when loading in
+  //the SCSS module styles for the footer component.
+  min-height: 94vh;
 
-  display: flex;
-  flex-direction: column;
-  textarea.form-control {
-    height: 370px;
-    resize: none;
-  }
+  background-color: dates-theme-color(secondary-5);
 }
