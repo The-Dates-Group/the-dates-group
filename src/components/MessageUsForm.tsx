@@ -13,39 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ChangeEvent, Children, PropsWithChildren, useEffect, useState } from 'react'
+import { Children, PropsWithChildren, useEffect, useState } from 'react'
 import { Button, Card, Col, Collapse, Form, InputGroup, Row } from 'react-bootstrap'
-import type { MessageUsPost } from '@/lib/common/data-types'
-import { emailRegex } from '@/utils/regexes'
 import { useUnfocus } from '@/components/hooks/useFocus'
-import { usePOST } from '@/components/hooks/useRequest'
-
-type FieldData = {
-  readonly value: string
-  readonly validationError?: string
-}
-
-type MessageUsFormState = {
-  readonly name: FieldData
-  readonly email: FieldData
-  readonly subject: FieldData
-  readonly message: FieldData
-  readonly forceValidate: boolean
-  readonly submitted: boolean
-}
-
-type FormRowProps = PropsWithChildren
-
-type FormFieldProps = {
-  label: string
-  as?: 'input' | 'textarea'
-  type?: string
-  placeholder?: string
-  data: FieldData
-  setData: (data: FieldData) => void
-  validate: (value: string) => string | undefined
-  forceValidate?: boolean
-}
+import { emailRegex } from '@/utils/regexes'
+import { MessageUsPost } from '@/lib/common/data-types'
+import useFormSubmission from '@/components/hooks/useFormSubmission'
 
 const validateName = (name: string): string | undefined => {
   if(name.length < 1) return 'Please enter your name'
@@ -64,164 +37,171 @@ const validateMessage = (message: string): string | undefined => {
   if(message.length < 1) return 'Please provide a message'
 }
 
-const defaultState = {
-  name: { value: '' },
-  email: { value: '' },
-  subject: { value: '' },
-  message: { value: '' },
-  forceValidate: false,
-  submitted: false
+export type FieldData = {
+  readonly value: string
+  readonly validation?: string
 }
 
-export default function MessageUsForm() {
-  const [state, setState] = useState<MessageUsFormState>(defaultState)
-  const [request, response] = usePOST<MessageUsPost>('/api/message-us')
+export type MessageUsFormProps = {}
 
-  // this is a weird effect used as a hack to force validationErrors of the child fields to render on submit
-  const onSubmit = () => setState(prevState => ({ ...prevState, forceValidate: true }))
-  useEffect(() => {
-    if(state.forceValidate) {
-      if(!state.submitted) {
-        // by changing submitted here we can force an intermediate re-render and validates the child fields...
-        setState(prevState => ({ ...prevState, submitted: true }))
-      } else {
-        // ... and then, the validations are passed to here
-        request.exec({
-          name: state.name.value,
-          email: state.email.value,
-          subject: state.subject.value,
-          message: state.message.value
-        }).then(() => {
-          // reset forceValidate and submitted to avoid this effect triggering again when fields are changed
-          setState(() => ({ ...defaultState }))
-        }).catch(() => {
-          setState(() => ({ ...defaultState }))
-        })
-      }
-    }
-    // eslint-disable-next-line
-  }, [state.forceValidate, state.submitted])
+export type MessageUsFormState = {
+  readonly name: FieldData
+  readonly email: FieldData
+  readonly subject: FieldData
+  readonly message: FieldData
+}
 
-  const setName = (name: FieldData) => setState(prevState => ({ ...prevState, name }))
-  const setEmail = (email: FieldData) => setState(prevState => ({ ...prevState, email }))
-  const setSubject = (subject: FieldData) => setState(prevState => ({ ...prevState, subject }))
-  const setMessage = (message: FieldData) => setState(prevState => ({ ...prevState, message }))
+export default function MessageUsForm(_: MessageUsFormProps) {
+  const [form, formState] = useFormSubmission<MessageUsPost>('message-us-form')
+  const [state, setState] = useState<MessageUsFormState>({
+    name: { value: '' },
+    email: { value: '' },
+    subject: { value: '' },
+    message: { value: '' }
+  })
+
+  const isValidForSubmission = () => {
+    if(state.name.validation)
+      return false
+    else if(state.email.validation)
+      return false
+    else if(state.subject.validation)
+      return false
+    else if(state.message.validation)
+      return false
+    return !formState.isComplete || formState.isSuccess
+  }
+
+  const onFieldChanged = (
+    field: keyof MessageUsFormState,
+    value: string,
+    validation?: string
+  ) => setState(prevState => ({
+    ...prevState,
+    [field]: { value, validation }
+  }))
+
+  const onNameValueChanged = (value: string) => onFieldChanged('name', value, validateName(value))
+  const onEmailValueChanged = (value: string) => onFieldChanged('email', value, validateEmail(value))
+  const onSubjectValueChanged = (value: string) => onFieldChanged('subject', value, validateSubject(value))
+  const onMessageValueChanged = (value: string) => onFieldChanged('message', value, validateMessage(value))
+
+  const handleSubmit = async () => {
+    return form.submit({
+      name: state.name.value,
+      email: state.email.value,
+      subject: state.subject.value,
+      message: state.message.value
+    })
+  }
 
   return (
-    <Form as={Card.Body} className="d-flex flex-column gap-vertical-4">
-      <FormRow>
-        <FormField
+    <Card.Body as={Form} className="d-flex flex-column gap-vertical-3">
+      <MessageUsInputGroupRow>
+        <MessageUsField
           label="Name"
           type="text"
           placeholder="John Smith"
-          data={state.name}
-          setData={setName}
-          validate={validateName}
-          forceValidate={state.forceValidate}
+          onChange={onNameValueChanged}
+          {...state.name}
         />
-        <FormField
+        <MessageUsField
           label="Email"
           type="email"
-          placeholder="john@mail.com"
-          data={state.email}
-          setData={setEmail}
-          validate={validateEmail}
-          forceValidate={state.forceValidate}
+          placeholder="jsmith@mail.com"
+          onChange={onEmailValueChanged}
+          {...state.email}
         />
-      </FormRow>
-      <FormRow>
-        <FormField
+      </MessageUsInputGroupRow>
+      <MessageUsInputGroupRow>
+        <MessageUsField
           label="Subject"
           type="text"
           placeholder="Subject"
-          data={state.subject}
-          setData={setSubject}
-          validate={validateSubject}
-          forceValidate={state.forceValidate}
+          onChange={onSubjectValueChanged}
+          {...state.subject}
         />
-      </FormRow>
-      <FormRow>
-        <FormField
-          label="Message"
+      </MessageUsInputGroupRow>
+      <MessageUsInputGroupRow>
+        <MessageUsField
           as="textarea"
+          label="Message"
           type="text"
           placeholder="Message"
-          data={state.message}
-          setData={setMessage}
-          validate={validateMessage}
-          forceValidate={state.forceValidate}
+          onChange={onMessageValueChanged}
+          {...state.message}
         />
-      </FormRow>
-      <FormRow>
-        <Button variant="dates-primary" onClick={onSubmit}>Submit</Button>
-        <Collapse in={response.isComplete && !response.isSuccess}>
-          <div>
-            {response.isComplete && !response.isSuccess ? response.error.message : 'test'}
-          </div>
-        </Collapse>
-      </FormRow>
-    </Form>
+      </MessageUsInputGroupRow>
+      <Button variant="dates-primary" disabled={!isValidForSubmission()} onClick={handleSubmit}>
+        Submit
+      </Button>
+    </Card.Body>
   )
 }
 
-function FormRow(props: FormRowProps) {
+type MessageUsInputGroupRowProps = PropsWithChildren
+
+function MessageUsInputGroupRow(props: MessageUsInputGroupRowProps) {
   const children = Children.toArray(props.children)
   return (
-    <Form.Group as={Row} xs={1} md={children.length} className="gap-vertical-4 gap-vertical-md-0">
+    <Form.Group as={Row} xs={1} md={children.length} className="gap-vertical-3 gap-vertical-md-0">
       {children.map((value, i) =>
         <Col key={`column-${i}`}>
-          {value}
+          <InputGroup hasValidation>
+            {value}
+          </InputGroup>
         </Col>
       )}
     </Form.Group>
   )
 }
 
-function FormField({ data, setData, label, as, type, placeholder, validate, forceValidate }: FormFieldProps) {
-  const [wasValidated, setWasValidated] = useState(false)
-  const [ref, wasUnfocused] = useUnfocus<any>(() => {
-    const validationError = validate(data.value)
-    setData({ ...data, validationError })
-    setWasValidated(true)
-  })
+type MessageUsFieldProps = {
+  readonly label: string
+  readonly name?: string | Lowercase<MessageUsFieldProps['label']>
+  readonly type: string
+  readonly placeholder: string
+  readonly value: string
+  readonly validation?: string
+  readonly onChange: (value: string) => void
+  readonly as?: 'input' | 'textarea'
+}
 
-  useEffect(() => {
-    if(!wasValidated && forceValidate) {
-      const validationError = validate(data.value)
-      setData({ ...data, validationError })
-      setWasValidated(true)
-    }
-  }, [data, setData, wasValidated, forceValidate, validate])
+type MessageUsFieldState = {
+  readonly value: string
+}
 
-  const onChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const value = event.target.value
-    setData({
-      value,
-      // do not generate a validation error when still initially focused
-      validationError: wasUnfocused ? validate(value) : undefined
-    })
-  }
+function MessageUsField(props: MessageUsFieldProps) {
+  const [state, setState] = useState<MessageUsFieldState>({ value: props.value })
+  const [ref, wasUnfocused] = useUnfocus<any>()
+
+  // side effect that will send call onChange function provided
+  //by the parent each time the value of this field is updated
+  useEffect(() => props.onChange(state.value), [state.value])
+
+  const isValid = !props.validation
+  const onChange = (event: any) => setState(prevState => ({
+    ...prevState,
+    value: event.target.value
+  }))
 
   return (
-    <InputGroup hasValidation>
-      <Form.FloatingLabel label={label}>
-        <Form.Control
-          ref={ref}
-          as={as}
-          isValid={wasValidated && data.value.length > 0 && !data.validationError}
-          isInvalid={wasValidated && !!data.validationError}
-          type={type}
-          placeholder={placeholder}
-          value={data.value}
-          onChange={onChange}
-          style={as === 'textarea' ? { resize: 'none', height: '370px' } : undefined}
-        />
-        <Collapse in={data.validationError ? data.validationError.length > 0 : false}>
-          <Form.Control.Feedback type="invalid">
-            {data.validationError}
-          </Form.Control.Feedback>
-        </Collapse>
-      </Form.FloatingLabel>
-    </InputGroup>
+    <Form.FloatingLabel label={props.label}>
+      <Form.Control
+        ref={ref}
+        as={props.as || 'input'}
+        type={props.type}
+        isValid={wasUnfocused && isValid}
+        isInvalid={wasUnfocused && !isValid}
+        placeholder={props.placeholder}
+        onChange={onChange}
+        style={props.as === 'textarea' ? { resize: 'none', height: '370px' } : undefined}
+      />
+      <Collapse in={wasUnfocused && !isValid}>
+        <Form.Control.Feedback type="invalid">
+          {props.validation}
+        </Form.Control.Feedback>
+      </Collapse>
+    </Form.FloatingLabel>
   )
 }

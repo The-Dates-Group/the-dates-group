@@ -13,20 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { createContext, Dispatch, PropsWithChildren, SetStateAction, useContext, useState } from 'react'
-import globalAxios, { AxiosError, AxiosInstance, Method } from 'axios'
+import { Dispatch, SetStateAction, useState } from 'react'
+import { AxiosError, AxiosRequestConfig, Method } from 'axios'
 import { APIError } from '@/lib/common/data-types'
-
-// Internals
-
-const InternalContext = createContext<Requester>(undefined as unknown as Requester)
-
-function useRequester(): Requester {
-  const requester = useContext(InternalContext)
-  if(typeof requester === 'undefined')
-    throw new Error('Requester not defined! Did you forget to nest this inside a Requester.Provider?')
-  return requester
-}
+import useRequester, { Requester } from '@/components/hooks/useRequester'
 
 class ResponseHookImpl<T> implements ResponseHook<T> {
   static incomplete = new ResponseHookImpl(false)
@@ -74,6 +64,7 @@ class ResponseHookImpl<T> implements ResponseHook<T> {
 class RequestHookImpl<B, T> implements RequestHook<B, T> {
   private readonly requester: Requester
   private readonly setResponse: Dispatch<SetStateAction<ResponseHook<T>>>
+  private readonly config?: RequestHookConfigProvider
   readonly method: Method
   readonly url: string
 
@@ -81,17 +72,25 @@ class RequestHookImpl<B, T> implements RequestHook<B, T> {
     requester: Requester,
     setResponse: Dispatch<SetStateAction<ResponseHook<T>>>,
     method: Method,
-    url: string
+    url: string,
+    config?: RequestHookConfigProvider
   ) {
     this.requester = requester
     this.setResponse = setResponse
     this.method = method
     this.url = url
+    this.config = config
   }
 
+  private provideConfig = (): AxiosRequestConfig =>
+    typeof this.config == 'function' ? this.config() : this.config || {}
+
   exec(body?: B): Promise<ResponseHook<T>> {
-    return this.requester.axios(this.url, { method: this.method, data: body })
-      .then(({ status, data }) => new ResponseHookImpl<T>(true, status, data))
+    return this.requester.axios(this.url, {
+      ...this.provideConfig(),
+      method: this.method,
+      data: body
+    }).then(({ status, data }) => new ResponseHookImpl<T>(true, status, data))
       .catch(error => {
         if(error instanceof AxiosError) {
           if(error.response) {
@@ -111,9 +110,9 @@ class RequestHookImpl<B, T> implements RequestHook<B, T> {
 
 // Types
 
-export type RequestProviderProps = PropsWithChildren<{ axios?: AxiosInstance }>
+export type RequestHookConfig = Omit<Omit<AxiosRequestConfig, 'method'>, 'data'>
 
-export type RequestHookValue<B, T> = [request: RequestHook<B, T>, response: ResponseHook<T>]
+export type RequestHookConfigProvider = RequestHookConfig | (() => RequestHookConfig)
 
 // Interfaces
 
@@ -132,37 +131,32 @@ export interface ResponseHook<T> {
   readonly error: APIError
 }
 
-// Context
-
-export class Requester {
-  readonly axios: AxiosInstance
-
-  private constructor(axios?: AxiosInstance) {
-    this.axios = axios || globalAxios
-  }
-
-  public static Provider = (props: RequestProviderProps) =>
-    <InternalContext.Provider value={new Requester(props.axios)}>
-      {props.children}
-    </InternalContext.Provider>
-}
-
 // Module Default
 
-export default function useRequest<B, T>(method: Method, url: string): RequestHookValue<B, T> {
+export default function useAPIRequest<B, T>(
+  method: Method,
+  url: string,
+  config?: RequestHookConfigProvider
+): [request: RequestHook<B, T>, response: ResponseHook<T>] {
   const requester = useRequester()
   const [response, setResponse] = useState<ResponseHook<T>>(ResponseHookImpl.incomplete as ResponseHook<T>)
-  const request = new RequestHookImpl<B, T>(requester, setResponse, method, url)
+  const request = new RequestHookImpl<B, T>(requester, setResponse, method, url, config)
   return [request, response]
 }
 
 // Shortcuts
 
-export const useGET =
-  <T extends object>(url: string): RequestHookValue<T, undefined> => useRequest('GET', url)
+export const useGET = <T extends object, B = undefined>(
+  url: string,
+  config?: RequestHookConfigProvider
+): [request: RequestHook<B, T>, response: ResponseHook<T>] => useAPIRequest('GET', url, config)
 
-export const usePOST =
-  <B extends object, T extends any = any>(url: string): RequestHookValue<B, T> => useRequest('POST', url)
+export const usePOST = <B extends object, T extends any = any>(
+  url: string,
+  config?: RequestHookConfigProvider
+): [request: RequestHook<B, T>, response: ResponseHook<T>] => useAPIRequest('POST', url, config)
 
-export const useDELETE =
-  <B extends any = any, T extends any = any>(url: string): RequestHookValue<B, T> => useRequest('DELETE', url)
+export const useDELETE = <B extends any = any, T extends any = any>(
+  url: string,
+  config?: RequestHookConfigProvider
+): [request: RequestHook<B, T>, response: ResponseHook<T>] => useAPIRequest('DELETE', url, config)

@@ -23,7 +23,7 @@ import { SSRProvider } from '@react-aria/ssr'
 // NOTE: global styles need to be delivered first!
 import '@/styles/index.scss'
 
-import { Requester } from '@/components/hooks/useRequest'
+import { Requester } from '@/components/hooks/useRequester'
 import SiteNavigation from '@/components/SiteNavigation'
 import SiteFooter from '@/components/SiteFooter'
 import LoadingSpinner from '@/components/LoadingSpinner'
