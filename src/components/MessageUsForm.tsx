@@ -96,7 +96,7 @@ export default function MessageUsForm(_: MessageUsFormProps) {
   }
 
   return (
-    <Card.Body as={Form} className="d-flex flex-column gap-vertical-3">
+    <Card.Body as={Form} name={form.name} data-netlify="true" className="d-flex flex-column gap-vertical-3">
       <MessageUsInputGroupRow>
         <MessageUsField
           label="Name"
@@ -189,6 +189,7 @@ function MessageUsField(props: MessageUsFieldProps) {
     <Form.FloatingLabel label={props.label}>
       <Form.Control
         ref={ref}
+        name={props.label.toLowerCase()}
         as={props.as || 'input'}
         type={props.type}
         isValid={wasUnfocused && isValid}
