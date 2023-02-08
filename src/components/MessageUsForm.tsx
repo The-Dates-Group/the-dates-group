@@ -196,7 +196,6 @@ function MessageUsField(props: MessageUsFieldProps) {
         isInvalid={wasUnfocused && !isValid}
         placeholder={props.placeholder}
         onChange={onChange}
-        style={props.as === 'textarea' ? { resize: 'none', height: '370px' } : undefined}
       />
       <Collapse in={wasUnfocused && !isValid}>
         <Form.Control.Feedback type="invalid">

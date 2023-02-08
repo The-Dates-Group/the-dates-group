@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2023 Kaidan Gustave
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,31 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-
-/*
- * Notes:
- * - Currently tested minimum viewport is 280x653 (Galaxy Fold)
- * - Currently tested maximum viewport is 1280x800 (Nest Hub Max)
- * - Bootstrap reboot is done via the _reboot.scss stylesheet
- */
-
-// core styles
-@import "variables";
-@import "functions";
-@import "mixins";
-@import "reboot";
-@import "theme";
-@import "utilities";
-
-// component styles
-@import "components/page";
-@import "components/card";
-@import "components/hero-image";
-@import "components/form";
-
-// page styles
-@import "pages/home-page";
-
-// misc styles
-@import "misc/scrollbar";
+textarea.form-control {
+  resize: none;
+  height: 370px;
+}
