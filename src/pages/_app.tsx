@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { Suspense } from 'react'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
 import axios from 'axios'
@@ -26,7 +25,6 @@ import '@/styles/index.scss'
 import { Requester } from '@/components/hooks/useRequester'
 import SiteNavigation from '@/components/SiteNavigation'
 import SiteFooter from '@/components/SiteFooter'
-import LoadingSpinner from '@/components/LoadingSpinner'
 
 import meta from '@/data/meta.json'
 
@@ -80,9 +78,7 @@ export default function App({ Component, pageProps }: AppProps) {
           <SiteNavigation.Item href="/about-us" label="About Us"/>
           <SiteNavigation.Item href="/faqs" label="FAQs"/>
         </SiteNavigation>
-        <Suspense fallback={<LoadingSpinner/>}>
-          <Component {...pageProps}/>
-        </Suspense>
+        <Component {...pageProps}/>
         <SiteFooter/>
       </Requester.Provider>
     </SSRProvider>
