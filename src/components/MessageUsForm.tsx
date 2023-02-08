@@ -172,12 +172,12 @@ type MessageUsFieldState = {
 }
 
 function MessageUsField(props: MessageUsFieldProps) {
-  const [state, setState] = useState<MessageUsFieldState>({ value: props.value })
+  const [{ value }, setState] = useState<MessageUsFieldState>({ value: props.value })
   const [ref, wasUnfocused] = useUnfocus<any>()
 
   // side effect that will send call onChange function provided
   //by the parent each time the value of this field is updated
-  useEffect(() => props.onChange(state.value), [state.value])
+  useEffect(() => props.onChange(value), [value])
 
   const isValid = !props.validation
   const onChange = (event: any) => setState(prevState => ({

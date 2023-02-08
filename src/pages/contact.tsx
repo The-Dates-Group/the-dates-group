@@ -69,7 +69,7 @@ export default function ContactPage() {
             </Nav>
             <Tab.Content>
               {tabs.map((tab, index) =>
-                <Tab.Pane key={`tab-pane-${index}`} active={key === tab.key} eventKey={tab.key}>
+                <Tab.Pane key={`tab-pane-${index}`} active={key === tab.key} eventKey={tab.key} transition={false}>
                   <tab.render/>
                 </Tab.Pane>
               )}
