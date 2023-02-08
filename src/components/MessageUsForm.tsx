@@ -19,6 +19,7 @@ import { useUnfocus } from '@/components/hooks/useFocus'
 import { emailRegex } from '@/utils/regexes'
 import { MessageUsPost } from '@/lib/common/data-types'
 import useFormSubmission from '@/components/hooks/useFormSubmission'
+import RenderClientSide from '@/components/helpers/RenderClientSide'
 
 const validateName = (name: string): string | undefined => {
   if(name.length < 1) return 'Please enter your name'
@@ -51,20 +52,23 @@ export type MessageUsFormState = {
   readonly message: FieldData
 }
 
+const FauxForm = () =>
+  <form data-netlify="true" hidden>
+    <input type="hidden" name="form-name" value="message-us-form"/>
+    <input type="text" name="name"/>
+    <input type="email" name="email"/>
+    <input type="text" name="subject"/>
+    <input type="text" name="message"/>
+  </form>
+
 export default function MessageUsForm(_: MessageUsFormProps) {
   const [form, formState] = useFormSubmission<MessageUsPost>('message-us-form')
-  const [hasRendered, setHasRendered] = useState(false)
   const [state, setState] = useState<MessageUsFormState>({
     name: { value: '' },
     email: { value: '' },
     subject: { value: '' },
     message: { value: '' }
   })
-
-  useEffect(() => {
-    if(!hasRendered)
-      setHasRendered(true)
-  }, [hasRendered])
 
   const isValidForSubmission = () => {
     if(state.name.validation)
@@ -101,47 +105,56 @@ export default function MessageUsForm(_: MessageUsFormProps) {
     })
   }
 
-  return !hasRendered ? null :
-    <Card.Body as={Form} name={form.name} data-netlify="true" className="d-flex flex-column gap-vertical-3">
-      <MessageUsInputGroupRow>
-        <MessageUsField
-          label="Name"
-          type="text"
-          placeholder="John Smith"
-          onChange={onNameValueChanged}
-          {...state.name}
-        />
-        <MessageUsField
-          label="Email"
-          type="email"
-          placeholder="jsmith@mail.com"
-          onChange={onEmailValueChanged}
-          {...state.email}
-        />
-      </MessageUsInputGroupRow>
-      <MessageUsInputGroupRow>
-        <MessageUsField
-          label="Subject"
-          type="text"
-          placeholder="Subject"
-          onChange={onSubjectValueChanged}
-          {...state.subject}
-        />
-      </MessageUsInputGroupRow>
-      <MessageUsInputGroupRow>
-        <MessageUsField
-          as="textarea"
-          label="Message"
-          type="text"
-          placeholder="Message"
-          onChange={onMessageValueChanged}
-          {...state.message}
-        />
-      </MessageUsInputGroupRow>
-      <Button variant="dates-primary" disabled={!isValidForSubmission()} onClick={handleSubmit}>
-        Submit
-      </Button>
-    </Card.Body>
+  return (
+    <>
+      {/*  For some reason, this component causes a minification error
+          when rendered statically. We need to render it client-side.
+           Additionally, we can use this to statically render a faux-form
+          to trick netlify into generating a form from our static content. */}
+      <RenderClientSide fallback={FauxForm}>
+        <Card.Body as={Form} className="d-flex flex-column gap-vertical-3">
+          <MessageUsInputGroupRow>
+            <MessageUsField
+              label="Name"
+              type="text"
+              placeholder="John Smith"
+              onChange={onNameValueChanged}
+              {...state.name}
+            />
+            <MessageUsField
+              label="Email"
+              type="email"
+              placeholder="jsmith@mail.com"
+              onChange={onEmailValueChanged}
+              {...state.email}
+            />
+          </MessageUsInputGroupRow>
+          <MessageUsInputGroupRow>
+            <MessageUsField
+              label="Subject"
+              type="text"
+              placeholder="Subject"
+              onChange={onSubjectValueChanged}
+              {...state.subject}
+            />
+          </MessageUsInputGroupRow>
+          <MessageUsInputGroupRow>
+            <MessageUsField
+              as="textarea"
+              label="Message"
+              type="text"
+              placeholder="Message"
+              onChange={onMessageValueChanged}
+              {...state.message}
+            />
+          </MessageUsInputGroupRow>
+          <Button variant="dates-primary" disabled={!isValidForSubmission()} onClick={handleSubmit}>
+            Submit
+          </Button>
+        </Card.Body>
+      </RenderClientSide>
+    </>
+  )
 }
 
 type MessageUsInputGroupRowProps = PropsWithChildren
