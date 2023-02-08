@@ -29,7 +29,7 @@ const TeamMemberImage = (props: TeamMemberImageProps) =>
     <Image
       src={props.src}
       alt={`${props.name} photo`}
-      className="card-img placeholder"
+      className="card-img"
       priority={props.noLazy}
       loading={props.noLazy ? 'eager' : 'lazy'}/>
   </div>
