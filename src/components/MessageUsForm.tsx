@@ -13,13 +13,58 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Children, PropsWithChildren, useEffect, useState } from 'react'
-import { Button, Card, Col, Collapse, Form, InputGroup, Row } from 'react-bootstrap'
+import { Children, MouseEventHandler, PropsWithChildren, useEffect, useState } from 'react'
+import { Button, Card, Col, Collapse, Form, InputGroup, Modal, Placeholder, Row } from 'react-bootstrap'
+import { useIsSSR } from '@react-aria/ssr'
 import { useUnfocus } from '@/components/hooks/useFocus'
 import { emailRegex } from '@/utils/regexes'
 import { MessageUsPost } from '@/lib/common/data-types'
 import useFormSubmission from '@/components/hooks/useFormSubmission'
-import RenderClientSide from '@/components/helpers/RenderClientSide'
+import { useRouter } from 'next/router'
+
+type ResultModalProps = {
+  show: boolean
+  success: boolean
+  onHide: MouseEventHandler<HTMLDivElement>
+}
+
+const ResultModal = (props: ResultModalProps) =>
+  <Modal show={props.show} enforceFocus={true} backdrop="static">
+    <Modal.Header closeButton onClick={props.onHide}>
+      <span className="h3 mb-0">{props.success ? 'Thank you!' : 'Uh Oh!'}</span>
+    </Modal.Header>
+    <Modal.Body as="p" className="text-center mb-0">
+      {props.success ? 'Your message was submitted!' : 'Something went wrong, try again later!'}
+    </Modal.Body>
+  </Modal>
+
+const FauxForm = () =>
+  <Card.Body as={Form} data-netlify="true">
+    <input type="hidden" name="form-name" value="message-us-form"/>
+    <div className="d-flex flex-column gap-vertical-3 align-items-center">
+      <Row xs={1} md={2} className="gap-vertical-3 gap-vertical-md-0 w-100">
+        <Col as={Form.FloatingLabel}>
+          <Placeholder as="input" name="name" type="text" className="form-control"/>
+        </Col>
+        <Col as={Form.FloatingLabel}>
+          <Placeholder as="input" name="email" type="email" className="form-control"/>
+        </Col>
+      </Row>
+      <Row xs={1} className="w-100">
+        <Col as={Form.FloatingLabel} className="d-flex">
+          <Placeholder as="input" name="subject" type="text" className="form-control"/>
+        </Col>
+      </Row>
+      <Row xs={1} className="w-100">
+        <Col as={Form.FloatingLabel} className="d-flex">
+          <Placeholder as="textarea" name="message" type="text" className="form-control"/>
+        </Col>
+      </Row>
+      <Button variant="dates-primary" disabled>
+        Submit
+      </Button>
+    </div>
+  </Card.Body>
 
 const validateName = (name: string): string | undefined => {
   if(name.length < 1) return 'Please enter your name'
@@ -52,23 +97,18 @@ export type MessageUsFormState = {
   readonly message: FieldData
 }
 
-const FauxForm = () =>
-  <form data-netlify="true" hidden>
-    <input type="hidden" name="form-name" value="message-us-form"/>
-    <input type="text" name="name"/>
-    <input type="email" name="email"/>
-    <input type="text" name="subject"/>
-    <input type="text" name="message"/>
-  </form>
-
 export default function MessageUsForm(_: MessageUsFormProps) {
-  const [form, formState] = useFormSubmission<MessageUsPost>('message-us-form')
+  const [submission, submissionState] = useFormSubmission<MessageUsPost>('message-us-form')
+  const [showResultModal, setShowResultModal] = useState(false)
   const [state, setState] = useState<MessageUsFormState>({
     name: { value: '' },
     email: { value: '' },
     subject: { value: '' },
     message: { value: '' }
   })
+
+  const router = useRouter()
+  const isSSR = useIsSSR()
 
   const isValidForSubmission = () => {
     if(state.name.validation)
@@ -79,7 +119,7 @@ export default function MessageUsForm(_: MessageUsFormProps) {
       return false
     else if(state.message.validation)
       return false
-    return !formState.isComplete || formState.isSuccess
+    return !submissionState.isComplete
   }
 
   const onFieldChanged = (
@@ -97,64 +137,77 @@ export default function MessageUsForm(_: MessageUsFormProps) {
   const onMessageValueChanged = (value: string) => onFieldChanged('message', value, validateMessage(value))
 
   const handleSubmit = async () => {
-    return form.submit({
+    const isSuccessful = await submission.submit({
       name: state.name.value,
       email: state.email.value,
       subject: state.subject.value,
       message: state.message.value
     })
+    setShowResultModal(true)
+    return isSuccessful
   }
 
-  return (
-    <>
-      {/*  For some reason, this component causes a minification error
-          when rendered statically. We need to render it client-side.
-           Additionally, we can use this to statically render a faux-form
-          to trick netlify into generating a form from our static content. */}
-      <RenderClientSide fallback={FauxForm}>
-        <Card.Body as={Form} className="d-flex flex-column gap-vertical-3">
-          <MessageUsInputGroupRow>
-            <MessageUsField
-              label="Name"
-              type="text"
-              placeholder="John Smith"
-              onChange={onNameValueChanged}
-              {...state.name}
-            />
-            <MessageUsField
-              label="Email"
-              type="email"
-              placeholder="jsmith@mail.com"
-              onChange={onEmailValueChanged}
-              {...state.email}
-            />
-          </MessageUsInputGroupRow>
-          <MessageUsInputGroupRow>
-            <MessageUsField
-              label="Subject"
-              type="text"
-              placeholder="Subject"
-              onChange={onSubjectValueChanged}
-              {...state.subject}
-            />
-          </MessageUsInputGroupRow>
-          <MessageUsInputGroupRow>
-            <MessageUsField
-              as="textarea"
-              label="Message"
-              type="text"
-              placeholder="Message"
-              onChange={onMessageValueChanged}
-              {...state.message}
-            />
-          </MessageUsInputGroupRow>
-          <Button variant="dates-primary" disabled={!isValidForSubmission()} onClick={handleSubmit}>
-            Submit
-          </Button>
-        </Card.Body>
-      </RenderClientSide>
-    </>
-  )
+  const handleResultModalDismissed = (event: any) => {
+    event.preventDefault()
+    // if the submission was a success
+    if(submissionState.isSuccess) {
+      // reload the page
+      router.reload()
+      // return
+      return
+    }
+    // otherwise, hide the modal
+    // this will prevent more submissions that error out
+    setShowResultModal(false)
+  }
+
+  return isSSR ? <FauxForm/> : <>
+    <ResultModal
+      show={showResultModal}
+      success={!!submissionState.isSuccess}
+      onHide={handleResultModalDismissed}
+    />
+    <Card.Body as={Form} className="d-flex flex-column gap-vertical-3">
+      <MessageUsInputGroupRow>
+        <MessageUsField
+          label="Name"
+          type="text"
+          placeholder="John Smith"
+          onChange={onNameValueChanged}
+          {...state.name}
+        />
+        <MessageUsField
+          label="Email"
+          type="email"
+          placeholder="jsmith@mail.com"
+          onChange={onEmailValueChanged}
+          {...state.email}
+        />
+      </MessageUsInputGroupRow>
+      <MessageUsInputGroupRow>
+        <MessageUsField
+          label="Subject"
+          type="text"
+          placeholder="Subject"
+          onChange={onSubjectValueChanged}
+          {...state.subject}
+        />
+      </MessageUsInputGroupRow>
+      <MessageUsInputGroupRow>
+        <MessageUsField
+          as="textarea"
+          label="Message"
+          type="text"
+          placeholder="Message"
+          onChange={onMessageValueChanged}
+          {...state.message}
+        />
+      </MessageUsInputGroupRow>
+      <Button variant="dates-primary" disabled={!isValidForSubmission()} onClick={handleSubmit}>
+        Submit
+      </Button>
+    </Card.Body>
+  </>
 }
 
 type MessageUsInputGroupRowProps = PropsWithChildren
@@ -162,7 +215,7 @@ type MessageUsInputGroupRowProps = PropsWithChildren
 function MessageUsInputGroupRow(props: MessageUsInputGroupRowProps) {
   const children = Children.toArray(props.children)
   return (
-    <Form.Group as={Row} xs={1} md={children.length} className="gap-vertical-3 gap-vertical-md-0">
+    <Row xs={1} md={children.length} className="gap-vertical-3 gap-vertical-md-0">
       {children.map((value, i) =>
         <Col key={`column-${i}`}>
           <InputGroup hasValidation>
@@ -170,7 +223,7 @@ function MessageUsInputGroupRow(props: MessageUsInputGroupRowProps) {
           </InputGroup>
         </Col>
       )}
-    </Form.Group>
+    </Row>
   )
 }
 

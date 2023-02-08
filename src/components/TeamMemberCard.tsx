@@ -19,7 +19,11 @@ import Image, { StaticImageData } from 'next/image'
 import { Button, Card, Col, Collapse, Fade, Row } from 'react-bootstrap'
 import { useMediaQueryMatches } from '@/components/hooks/useMediaQuery'
 
-type TeamMemberImageProps = { src: StaticImageData, name: string, noLazy?: boolean }
+type TeamMemberImageProps = {
+  src: StaticImageData
+  name: string
+  noLazy?: boolean
+}
 const TeamMemberImage = (props: TeamMemberImageProps) =>
   <div className="mb-3 mb-lg-0 mx-1 mx-lg-0">
     <Image
@@ -30,8 +34,9 @@ const TeamMemberImage = (props: TeamMemberImageProps) =>
       loading={props.noLazy ? 'eager' : 'lazy'}/>
   </div>
 
-type TeamMemberDescriptionProps = PropsWithChildren & { occupation: string }
-
+type TeamMemberDescriptionProps = PropsWithChildren & {
+  occupation: string
+}
 function TeamMemberDescription(props: TeamMemberDescriptionProps) {
   const isBelowLg = useMediaQueryMatches()
   const [subtitleFadedIn, setSubtitleFadedIn] = useState(isBelowLg)
@@ -71,10 +76,9 @@ function TeamMemberDescription(props: TeamMemberDescriptionProps) {
 }
 
 export type TeamMemberCardLayout = 'image-left' | 'image-right'
-export type TeamMemberCardProps =
-  TeamMemberImageProps
-  & PropsWithChildren
-  & { occupation: string, direction: TeamMemberCardLayout }
+export type TeamMemberCardProps = TeamMemberImageProps & TeamMemberDescriptionProps & {
+  direction: TeamMemberCardLayout
+}
 
 export default function TeamMemberCard(props: TeamMemberCardProps) {
   return (

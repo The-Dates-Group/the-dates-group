@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import Accordion from 'react-bootstrap/Accordion'
-import Page, { PageSection } from '../components/Page'
+import { Card, Accordion } from 'react-bootstrap'
+import Page from '@/components/Page'
 import faqs from '@/data/faqs.json'
-import { Card } from 'react-bootstrap'
 
 const FAQs = () =>
   <Page title="FAQs">
-    <PageSection>
+    <Page.Section>
       <Card className="card-clear">
         <Card.Header as="h1" className="text-center">
           Frequently Asked Questions
@@ -34,7 +33,7 @@ const FAQs = () =>
           )}
         </Card.Body>
       </Card>
-    </PageSection>
+    </Page.Section>
   </Page>
 
 export default FAQs

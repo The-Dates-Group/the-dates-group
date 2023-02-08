@@ -15,7 +15,7 @@
  */
 import { useEffect, useState } from 'react'
 import { Card, Nav, Tab } from 'react-bootstrap'
-import Page, { PageSection } from '@/components/Page'
+import Page from '@/components/Page'
 import MessageUsForm from '@/components/MessageUsForm'
 import ScheduleCalendar from '@/components/ScheduleCalendar'
 
@@ -35,48 +35,48 @@ const tabs = [
   {
     title: 'Send A Message',
     key: 'send-a-message',
-    render: MessageUsForm
+    Component: MessageUsForm
   },
   {
     title: 'Schedule A Call',
     key: 'schedule-a-call',
-    render: ScheduleCalendar
+    Component: ScheduleCalendar
   }
 ]
 
 export default function ContactPage() {
-  const [key, setKey] = useState<TabKey>(undefined as unknown as TabKey)
+  const [selectedKey, setSelectedKey] = useState<TabKey>(undefined as unknown as TabKey)
   useEffect(() => {
-    if(!key) setKey(defaultKey())
-  }, [key])
+    if(!selectedKey) setSelectedKey(defaultKey())
+  }, [selectedKey])
 
-  const handleTabSelected = (key: string | null) => setKey((key as TabKey | null) || defaultKey())
+  const handleTabSelected = (key: string | null) => setSelectedKey((key as TabKey | null) || defaultKey())
 
   return (
     <Page title="Contact">
-      <PageSection>
+      <Page.Section>
         <Card className="card-clear">
           <Tab.Container
-            activeKey={key}
+            activeKey={selectedKey}
             onSelect={handleTabSelected}
             generateChildId={(eventKey, type) => `${eventKey}-${type}`}>
             <Nav fill variant="tabs" as="ul">
-              {tabs.map((tab, index) =>
+              {tabs.map(({ key, title }, index) =>
                 <Nav.Item as="li" key={`tab-nav-${index}`} role="presentation">
-                  <Nav.Link eventKey={tab.key} as="button">{tab.title}</Nav.Link>
+                  <Nav.Link eventKey={key} as="button">{title}</Nav.Link>
                 </Nav.Item>
               )}
             </Nav>
             <Tab.Content>
-              {tabs.map((tab, index) =>
-                <Tab.Pane key={`tab-pane-${index}`} active={key === tab.key} eventKey={tab.key} transition={false}>
-                  <tab.render/>
+              {tabs.map(({ key, Component }, index) =>
+                <Tab.Pane key={`tab-pane-${index}`} active={key === selectedKey} eventKey={key} transition={false}>
+                  <Component/>
                 </Tab.Pane>
               )}
             </Tab.Content>
           </Tab.Container>
         </Card>
-      </PageSection>
+      </Page.Section>
     </Page>
   )
 }

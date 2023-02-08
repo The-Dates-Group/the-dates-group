@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { Col, Row } from 'react-bootstrap'
-import Page, { PageSection } from '@/components/Page'
+import Page from '@/components/Page'
 import ServiceCard from '@/components/ServiceCard'
 
 export type Service = {
@@ -39,7 +39,7 @@ export const services: Service[] = [
 
 const ServicesPage = () =>
   <Page title="Services">
-    <PageSection>
+    <Page.Section>
       <h1 className="h2 text-center">Services</h1>
       <Row xs={1} sm={2} lg={3}>
         {services.map((service, i) =>
@@ -48,7 +48,7 @@ const ServicesPage = () =>
           </Col>
         )}
       </Row>
-    </PageSection>
+    </Page.Section>
   </Page>
 
 export default ServicesPage

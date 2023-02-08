@@ -28,7 +28,7 @@ $nav-link-hover-color: map-get($dates-theme-text, 'dates-text-dark-1');
 // nav tabs variable overrides
 $nav-tabs-border-color: map-get($dates-theme, "dates-primary");
 $nav-tabs-link-hover-border-color: map-get($dates-theme, "dates-primary-2");
-$nav-tabs-link-active-color: map-get($dates-theme-text, "dates-text-light-2");
+$nav-tabs-link-active-color: map-get($dates-theme-text, "dates-text-light");
 $nav-tabs-link-active-bg: map-get($dates-theme, "dates-primary-2");
 $nav-tabs-link-active-border-color: map-get($dates-theme, "dates-primary-1");
 
@@ -66,17 +66,17 @@ $accordion-icon-active-color: map-get($dates-theme-text, "dates-text-light");
 //@import "bootstrap/scss/pagination";
 //@import "bootstrap/scss/badge";
 //@import "bootstrap/scss/alert";
-//@import "bootstrap/scss/progress";
+@import "bootstrap/scss/progress"; // required
 //@import "bootstrap/scss/list-group";
-//@import "bootstrap/scss/close";
+@import "bootstrap/scss/close"; // required
 //@import "bootstrap/scss/toasts";
-//@import "bootstrap/scss/modal";
+@import "bootstrap/scss/modal"; // required
 //@import "bootstrap/scss/tooltip";
 //@import "bootstrap/scss/popover";
 @import "~bootstrap/scss/carousel"; // required
 @import "~bootstrap/scss/spinners"; // required
 //@import "bootstrap/scss/offcanvas";
-//@import "bootstrap/scss/placeholders";
+@import "bootstrap/scss/placeholders"; // required
 
 // Helpers
 @import "~bootstrap/scss/helpers";

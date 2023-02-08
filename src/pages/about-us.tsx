@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { Card } from 'react-bootstrap'
-import Page, { PageSection } from '@/components/Page'
+import Page from '@/components/Page'
 import TeamMemberCard from '@/components/TeamMemberCard'
 import { MediaQuery } from '@/components/hooks/useMediaQuery'
 
@@ -27,7 +27,7 @@ import lisaGreenImg from '@/images/staff/lisa-green.webp'
 
 const AboutUs = () =>
   <Page title="About Us">
-    <PageSection>
+    <Page.Section>
       <Card className="card-clear">
         <Card.Header as="h1" className="text-center">
           Our Team
@@ -133,7 +133,7 @@ const AboutUs = () =>
           </MediaQuery.Provider>
         </Card.Body>
       </Card>
-    </PageSection>
+    </Page.Section>
   </Page>
 
 export default AboutUs

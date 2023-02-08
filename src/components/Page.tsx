@@ -13,42 +13,58 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type { ElementType, PropsWithChildren } from 'react'
+import type { ElementType, ForwardedRef, PropsWithChildren } from 'react'
+import { Component, forwardRef } from 'react'
 import classNames from 'classnames'
 import HeroImage from './HeroImage'
 import { Container } from 'react-bootstrap'
 import Head from 'next/head'
 
-export type PageProps = PropsWithChildren & {
+export type PageProps = PropsWithChildren<{
   className?: string
   hero?: ElementType
   title?: string
-}
-
-const Page = (props: PageProps) =>
-  <>
-    {!props.title ? null : (
-      <Head>
-        <title>{props.title}</title>
-      </Head>
-    )}
-    <main className={classNames('page', 'd-flex', 'flex-column', 'pb-2', props.className)}>
-      {!props.hero ? null : (
-        <HeroImage>
-          <props.hero/>
-        </HeroImage>
-      )}
-      {props.children}
-    </main>
-  </>
+}>
 
 export type PageSectionProps = PropsWithChildren & {
   className?: string
 }
 
-export const PageSection = (props: PageSectionProps) =>
-  <Container as="section" className={classNames('my-auto', 'py-2', props.className)}>
+export const PageSection = forwardRef((props: PageSectionProps, ref: ForwardedRef<any>) =>
+  <Container as="section" className={classNames('my-auto', 'py-2', props.className)} ref={ref}>
     {props.children}
   </Container>
+)
 
-export default Page
+PageSection.displayName = 'PageSection'
+
+export default class Page extends Component<PageProps> {
+  static displayName = 'Page'
+
+  constructor(props: PageProps) {
+    super(props)
+  }
+
+  render() {
+    const { title, className, hero: Hero, children } = this.props
+    return (
+      <>
+        {!title ? null : (
+          <Head>
+            <title>{title}</title>
+          </Head>
+        )}
+        <main className={classNames('page', 'd-flex', 'flex-column', 'pb-2', className)}>
+          {!Hero ? null : (
+            <HeroImage>
+              <Hero/>
+            </HeroImage>
+          )}
+          {children}
+        </main>
+      </>
+    )
+  }
+
+  public static Section = PageSection
+}

@@ -15,7 +15,7 @@
  */
 import { Button, Card, Carousel, Col, Row } from 'react-bootstrap'
 import Image from 'next/image'
-import Page, { PageSection } from '@/components/Page'
+import Page from '@/components/Page'
 import ServiceCard from '@/components/ServiceCard'
 import { services } from '@/pages/services'
 import thumbnailA from '@/images/thumbnails/thumbnail-image-c-w1280.webp'
@@ -41,7 +41,7 @@ const HomePageHero = () =>
   </Card>
 
 const WhoWeAreSection = () =>
-  <PageSection>
+  <Page.Section>
     <Card className="card-clear">
       <Card.Header as="h1" className="text-center">Who We Are</Card.Header>
       <Card.Body className="container-fluid">
@@ -71,10 +71,10 @@ const WhoWeAreSection = () =>
         </Row>
       </Card.Body>
     </Card>
-  </PageSection>
+  </Page.Section>
 
 const ServicesSection = () =>
-  <PageSection>
+  <Page.Section>
     <Card className="card-clear">
       <Card.Header as="h1" className="text-center">Find The Services You Need</Card.Header>
       <Card.Body>
@@ -102,10 +102,10 @@ const ServicesSection = () =>
         </Row>
       </Card.Footer>
     </Card>
-  </PageSection>
+  </Page.Section>
 
 const ContactUsSection = () =>
-  <PageSection>
+  <Page.Section>
     <Card className="card-clear">
       <Card.Header as="h1" className="text-center">
         Ready to get your business funded?
@@ -121,7 +121,7 @@ const ContactUsSection = () =>
         </Row>
       </Card.Body>
     </Card>
-  </PageSection>
+  </Page.Section>
 
 const Home = () =>
   <Page className="home-page" hero={HomePageHero}>
