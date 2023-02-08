@@ -176,7 +176,6 @@ function MessageUsInputGroupRow(props: MessageUsInputGroupRowProps) {
 
 type MessageUsFieldProps = {
   readonly label: string
-  readonly name?: string | Lowercase<MessageUsFieldProps['label']>
   readonly type: string
   readonly placeholder: string
   readonly value: string
