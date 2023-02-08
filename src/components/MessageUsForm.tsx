@@ -53,12 +53,18 @@ export type MessageUsFormState = {
 
 export default function MessageUsForm(_: MessageUsFormProps) {
   const [form, formState] = useFormSubmission<MessageUsPost>('message-us-form')
+  const [hasRendered, setHasRendered] = useState(false)
   const [state, setState] = useState<MessageUsFormState>({
     name: { value: '' },
     email: { value: '' },
     subject: { value: '' },
     message: { value: '' }
   })
+
+  useEffect(() => {
+    if(!hasRendered)
+      setHasRendered(true)
+  }, [hasRendered])
 
   const isValidForSubmission = () => {
     if(state.name.validation)
@@ -95,7 +101,7 @@ export default function MessageUsForm(_: MessageUsFormProps) {
     })
   }
 
-  return (
+  return !hasRendered ? null :
     <Card.Body as={Form} name={form.name} data-netlify="true" className="d-flex flex-column gap-vertical-3">
       <MessageUsInputGroupRow>
         <MessageUsField
@@ -136,7 +142,6 @@ export default function MessageUsForm(_: MessageUsFormProps) {
         Submit
       </Button>
     </Card.Body>
-  )
 }
 
 type MessageUsInputGroupRowProps = PropsWithChildren
