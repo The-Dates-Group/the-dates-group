@@ -27,6 +27,9 @@ import SiteNavigation from '@/components/SiteNavigation'
 import SiteFooter from '@/components/SiteFooter'
 
 import meta from '@/data/meta.json'
+import { ErrorBoundary } from 'next/dist/client/components/error-boundary'
+import Page, { PageSection } from '@/components/Page'
+import { Card } from 'react-bootstrap'
 
 type AppHeadTagProps = { name: string, description: string, deploymentUrl: string, themeColor: string }
 const AppHeadTag = (props: AppHeadTagProps) =>
@@ -55,6 +58,27 @@ const AppHeadTag = (props: AppHeadTagProps) =>
     <meta name="twitter:creator" content="@datesgroup"/>
   </Head>
 
+const ErrorPage = (props: { error: Error }) => {
+  console.log(props.error)
+  return (
+    <Page>
+      <PageSection>
+        <Card className="card-clear">
+          <Card.Header>
+            <Card.Title as="h1">Something went wrong...</Card.Title>
+          </Card.Header>
+          <Card.Body>
+            <Card.Text>Looks like something went wrong:</Card.Text>
+            <Card.Text as="code">
+              {props.error.message}
+            </Card.Text>
+          </Card.Body>
+        </Card>
+      </PageSection>
+    </Page>
+  )
+}
+
 export default function App({ Component, pageProps }: AppProps) {
   const requester = axios.create({
     headers: {
@@ -78,7 +102,9 @@ export default function App({ Component, pageProps }: AppProps) {
           <SiteNavigation.Item href="/about-us" label="About Us"/>
           <SiteNavigation.Item href="/faqs" label="FAQs"/>
         </SiteNavigation>
-        <Component {...pageProps}/>
+        <ErrorBoundary errorComponent={ErrorPage}>
+          <Component {...pageProps}/>
+        </ErrorBoundary>
         <SiteFooter/>
       </Requester.Provider>
     </SSRProvider>
