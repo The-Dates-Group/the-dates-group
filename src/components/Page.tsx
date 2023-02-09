@@ -14,29 +14,44 @@
  * limitations under the License.
  */
 import type { ElementType, ForwardedRef, PropsWithChildren } from 'react'
-import { Component, forwardRef } from 'react'
+import { Component, forwardRef, useState } from 'react'
 import classNames from 'classnames'
 import HeroImage from './HeroImage'
 import { Container } from 'react-bootstrap'
 import Head from 'next/head'
+import { FadeInOnPosition } from '@/components/helpers/waypoint-transitions'
+
+type PageSectionContainerProps = PropsWithChildren<{ className?: string }>
+const PageSectionContainer = forwardRef((props: PageSectionContainerProps, ref: ForwardedRef<any>) => (
+  <Container as="section" className={classNames('my-auto', 'py-5', props.className)} ref={ref}>
+    {props.children}
+  </Container>
+))
+
+export type PageSectionProps = PageSectionContainerProps & {
+  className?: string
+  withFade?: boolean
+}
+
+export function PageSection({ withFade, children, ...containerProps }: PageSectionProps) {
+  const [element, setElement] = useState<HTMLElement | null>(null)
+
+  if(withFade) return (
+    <FadeInOnPosition once element={element} options={{ rootMargin: { bottom: -200 } }}>
+      <PageSectionContainer {...containerProps} ref={setElement}>
+        {children}
+      </PageSectionContainer>
+    </FadeInOnPosition>
+  )
+
+  return <PageSectionContainer {...containerProps} ref={setElement}>{children}</PageSectionContainer>
+}
 
 export type PageProps = PropsWithChildren<{
   className?: string
   hero?: ElementType
   title?: string
 }>
-
-export type PageSectionProps = PropsWithChildren & {
-  className?: string
-}
-
-export const PageSection = forwardRef((props: PageSectionProps, ref: ForwardedRef<any>) =>
-  <Container as="section" className={classNames('my-auto', 'py-2', props.className)} ref={ref}>
-    {props.children}
-  </Container>
-)
-
-PageSection.displayName = 'PageSection'
 
 export default class Page extends Component<PageProps> {
   static displayName = 'Page'
@@ -66,5 +81,8 @@ export default class Page extends Component<PageProps> {
     )
   }
 
-  public static Section = PageSection
+  static Section = PageSection
 }
+
+PageSection.displayName = 'PageSection'
+PageSectionContainer.displayName = 'PageSectionContainer'

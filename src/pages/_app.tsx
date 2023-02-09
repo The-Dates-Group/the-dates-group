@@ -62,7 +62,7 @@ const ErrorPage = (props: { error: Error }) => {
 export default function App({ Component, pageProps }: AppProps<AppStaticProps>) {
   const requester = axios.create({
     headers: {
-      'Content-Type': 'Application/Json'
+      'Content-Type': 'application/json'
     }
   })
 

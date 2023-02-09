@@ -17,11 +17,9 @@ import useRequester, { Requester } from '@/components/hooks/useRequester'
 import { Dispatch, SetStateAction, useState } from 'react'
 import { AxiosRequestConfig } from 'axios'
 
-type FormSubmissionBody<F> = F & { 'form-name': string }
-
 export type FormSubmissionState = {
   readonly isComplete: boolean
-  readonly isSuccess?: boolean
+  readonly isSuccess: boolean
 }
 
 export class FormSubmission<F> {
@@ -33,6 +31,7 @@ export class FormSubmission<F> {
 
   private readonly requester: Requester
   private readonly setState: Dispatch<SetStateAction<FormSubmissionState>>
+
   readonly name: string
 
   constructor(requester: Requester, setState: Dispatch<SetStateAction<FormSubmissionState>>, name: string) {
@@ -42,12 +41,12 @@ export class FormSubmission<F> {
   }
 
   submit(form: F): Promise<boolean> {
-    const formSubmissionBody = { ...form, 'form-name': this.name } as FormSubmissionBody<F>
-    return this.requester.axios.post('/', formSubmissionBody, FormSubmission.config)
+    const body = { ...form, 'form-name': this.name }
+    console.debug('Sending form:', body)
+    return this.requester.axios.post('/', body, FormSubmission.config)
       .then(response => {
         const isSuccess = response.status < 400
-        if(!isSuccess)
-          console.warn(`Form POST received non-success response: ${response.statusText}`)
+        if(!isSuccess) console.warn(`Form POST received non-success response: ${response.statusText}`)
         return isSuccess
       })
       .catch(e => {
@@ -63,7 +62,7 @@ export class FormSubmission<F> {
 
 export default function useFormSubmission<F>(name: string): [form: FormSubmission<F>, state: FormSubmissionState] {
   const requester = useRequester()
-  const [state, setState] = useState<FormSubmissionState>({ isComplete: false })
+  const [state, setState] = useState<FormSubmissionState>({ isComplete: false, isSuccess: false })
   const form = new FormSubmission(requester, setState, name)
   return [form, state]
 }

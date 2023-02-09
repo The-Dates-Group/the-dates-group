@@ -41,7 +41,7 @@ const HomePageHero = () =>
   </Card>
 
 const WhoWeAreSection = () =>
-  <Page.Section>
+  <Page.Section withFade>
     <Card className="card-clear">
       <Card.Header as="h1" className="text-center">Who We Are</Card.Header>
       <Card.Body className="container-fluid">
@@ -74,7 +74,7 @@ const WhoWeAreSection = () =>
   </Page.Section>
 
 const ServicesSection = () =>
-  <Page.Section>
+  <Page.Section withFade>
     <Card className="card-clear">
       <Card.Header as="h1" className="text-center">Find The Services You Need</Card.Header>
       <Card.Body>
@@ -105,7 +105,7 @@ const ServicesSection = () =>
   </Page.Section>
 
 const ContactUsSection = () =>
-  <Page.Section>
+  <Page.Section withFade>
     <Card className="card-clear">
       <Card.Header as="h1" className="text-center">
         Ready to get your business funded?
