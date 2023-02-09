@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 import { Children, MouseEventHandler, PropsWithChildren, useEffect, useState } from 'react'
-import { Button, Card, Col, Collapse, Form, InputGroup, Modal, Placeholder, Row } from 'react-bootstrap'
-import { useIsSSR } from '@react-aria/ssr'
+import { Button, Card, Col, Collapse, Form, InputGroup, Modal, Row } from 'react-bootstrap'
 import { useUnfocus } from '@/components/hooks/useFocus'
 import { emailRegex } from '@/utils/regexes'
 import { MessageUsPost } from '@/lib/common/data-types'
 import useFormSubmission from '@/components/hooks/useFormSubmission'
 import { useRouter } from 'next/router'
+import { NetlifyForm, useNetlifyFormField } from '@/components/hooks/useNetlifyForm'
 
 type ResultModalProps = {
   show: boolean
@@ -37,34 +37,6 @@ const ResultModal = (props: ResultModalProps) =>
       {props.success ? 'Your message was submitted!' : 'Something went wrong, try again later!'}
     </Modal.Body>
   </Modal>
-
-const FauxForm = () =>
-  <Card.Body as={Form} data-netlify="true">
-    <input type="hidden" name="form-name" value="message-us-form"/>
-    <div className="d-flex flex-column gap-vertical-3 align-items-center">
-      <Row xs={1} md={2} className="gap-vertical-3 gap-vertical-md-0 w-100">
-        <Col as={Form.FloatingLabel}>
-          <Placeholder as="input" name="name" type="text" className="form-control"/>
-        </Col>
-        <Col as={Form.FloatingLabel}>
-          <Placeholder as="input" name="email" type="email" className="form-control"/>
-        </Col>
-      </Row>
-      <Row xs={1} className="w-100">
-        <Col as={Form.FloatingLabel} className="d-flex">
-          <Placeholder as="input" name="subject" type="text" className="form-control"/>
-        </Col>
-      </Row>
-      <Row xs={1} className="w-100">
-        <Col as={Form.FloatingLabel} className="d-flex">
-          <Placeholder as="textarea" name="message" type="text" className="form-control"/>
-        </Col>
-      </Row>
-      <Button variant="dates-primary" disabled>
-        Submit
-      </Button>
-    </div>
-  </Card.Body>
 
 const validateName = (name: string): string | undefined => {
   if(name.length < 1) return 'Please enter your name'
@@ -97,7 +69,18 @@ export type MessageUsFormState = {
   readonly message: FieldData
 }
 
+export type MessageUsFormField = {
+  readonly name: string
+  readonly type: string
+  readonly placeholder: string
+  readonly value: string
+  readonly validation?: string
+  readonly onChange: (value: string) => void
+  readonly as?: 'input' | 'textarea'
+}
+
 export default function MessageUsForm(_: MessageUsFormProps) {
+  const router = useRouter()
   const [submission, submissionState] = useFormSubmission<MessageUsPost>('message-us-form')
   const [showResultModal, setShowResultModal] = useState(false)
   const [state, setState] = useState<MessageUsFormState>({
@@ -106,9 +89,6 @@ export default function MessageUsForm(_: MessageUsFormProps) {
     subject: { value: '' },
     message: { value: '' }
   })
-
-  const router = useRouter()
-  const isSSR = useIsSSR()
 
   const isValidForSubmission = () => {
     if(state.name.validation)
@@ -160,54 +140,103 @@ export default function MessageUsForm(_: MessageUsFormProps) {
     // this will prevent more submissions that error out
     setShowResultModal(false)
   }
-
-  return isSSR ? <FauxForm/> : <>
-    <ResultModal
-      show={showResultModal}
-      success={!!submissionState.isSuccess}
-      onHide={handleResultModalDismissed}
-    />
-    <Card.Body as={Form} className="d-flex flex-column gap-vertical-3">
-      <MessageUsInputGroupRow>
-        <MessageUsField
-          label="Name"
-          type="text"
-          placeholder="John Smith"
-          onChange={onNameValueChanged}
-          {...state.name}
-        />
-        <MessageUsField
-          label="Email"
-          type="email"
-          placeholder="jsmith@mail.com"
-          onChange={onEmailValueChanged}
-          {...state.email}
-        />
-      </MessageUsInputGroupRow>
-      <MessageUsInputGroupRow>
-        <MessageUsField
-          label="Subject"
-          type="text"
-          placeholder="Subject"
-          onChange={onSubjectValueChanged}
-          {...state.subject}
-        />
-      </MessageUsInputGroupRow>
-      <MessageUsInputGroupRow>
-        <MessageUsField
-          as="textarea"
-          label="Message"
-          type="text"
-          placeholder="Message"
-          onChange={onMessageValueChanged}
-          {...state.message}
-        />
-      </MessageUsInputGroupRow>
-      <Button variant="dates-primary" disabled={!isValidForSubmission()} onClick={handleSubmit}>
-        Submit
-      </Button>
-    </Card.Body>
-  </>
+  return (
+    <NetlifyForm.Provider name="message-us-form" fields={[
+      {
+        name: 'Name',
+        type: 'text',
+        placeholder: 'John Smith',
+        onChange: onNameValueChanged,
+        ...state.name
+      },
+      {
+        name: 'Email',
+        type: 'email',
+        placeholder: 'jsmith@mail.com',
+        onChange: onEmailValueChanged,
+        ...state.email
+      },
+      {
+        name: 'Subject',
+        type: 'text',
+        placeholder: 'Subject',
+        onChange: onSubjectValueChanged,
+        ...state.subject
+      },
+      {
+        name: 'Message',
+        as: 'textarea',
+        type: 'text',
+        placeholder: 'Message',
+        onChange: onMessageValueChanged,
+        ...state.message
+      }
+    ] as MessageUsFormField[]}>
+      <ResultModal show={showResultModal} success={!!submissionState.isSuccess} onHide={handleResultModalDismissed}/>
+      <Card.Body as={Form} className="d-flex flex-column gap-vertical-3">
+        <MessageUsInputGroupRow>
+          <MessageUsField index={0}/>
+          <MessageUsField index={1}/>
+        </MessageUsInputGroupRow>
+        <MessageUsInputGroupRow>
+          <MessageUsField index={2}/>
+        </MessageUsInputGroupRow>
+        <MessageUsInputGroupRow>
+          <MessageUsField index={3}/>
+        </MessageUsInputGroupRow>
+        <Button variant="dates-primary" disabled={!isValidForSubmission()} onClick={handleSubmit}>
+          Submit
+        </Button>
+      </Card.Body>
+    </NetlifyForm.Provider>
+  )
+  // return isSSR ? <FauxForm/> : <>
+  //   <ResultModal
+  //     show={showResultModal}
+  //     success={!!submissionState.isSuccess}
+  //     onHide={handleResultModalDismissed}
+  //   />
+  //   <Card.Body as={Form} className="d-flex flex-column gap-vertical-3">
+  //     <MessageUsInputGroupRow>
+  //       <MessageUsField
+  //         label="Name"
+  //         type="text"
+  //         placeholder="John Smith"
+  //         onChange={onNameValueChanged}
+  //         {...state.name}
+  //       />
+  //       <MessageUsField
+  //         label="Email"
+  //         type="email"
+  //         placeholder="jsmith@mail.com"
+  //         onChange={onEmailValueChanged}
+  //         {...state.email}
+  //       />
+  //     </MessageUsInputGroupRow>
+  //     <MessageUsInputGroupRow>
+  //       <MessageUsField
+  //         label="Subject"
+  //         type="text"
+  //         placeholder="Subject"
+  //         onChange={onSubjectValueChanged}
+  //         {...state.subject}
+  //       />
+  //     </MessageUsInputGroupRow>
+  //     <MessageUsInputGroupRow>
+  //       <MessageUsField
+  //         as="textarea"
+  //         label="Message"
+  //         type="text"
+  //         placeholder="Message"
+  //         onChange={onMessageValueChanged}
+  //         {...state.message}
+  //       />
+  //     </MessageUsInputGroupRow>
+  //     <Button variant="dates-primary" disabled={!isValidForSubmission()} onClick={handleSubmit}>
+  //       Submit
+  //     </Button>
+  //   </Card.Body>
+  // </>
 }
 
 type MessageUsInputGroupRowProps = PropsWithChildren
@@ -228,13 +257,15 @@ function MessageUsInputGroupRow(props: MessageUsInputGroupRowProps) {
 }
 
 type MessageUsFieldProps = {
-  readonly label: string
-  readonly type: string
-  readonly placeholder: string
-  readonly value: string
-  readonly validation?: string
-  readonly onChange: (value: string) => void
-  readonly as?: 'input' | 'textarea'
+  readonly index: number
+  // readonly name: string
+  // readonly label: string
+  // readonly type: string
+  // readonly placeholder: string
+  // readonly value: string
+  // readonly validation?: string
+  // readonly onChange: (value: string) => void
+  // readonly as?: 'input' | 'textarea'
 }
 
 type MessageUsFieldState = {
@@ -242,36 +273,65 @@ type MessageUsFieldState = {
 }
 
 function MessageUsField(props: MessageUsFieldProps) {
-  const [{ value }, setState] = useState<MessageUsFieldState>({ value: props.value })
+  const field = useNetlifyFormField<MessageUsFormField>(props.index)
+  const [{ value }, setState] = useState<MessageUsFieldState>({ value: field.value })
   const [ref, wasUnfocused] = useUnfocus<any>()
 
   // side effect that will send call onChange function provided
   //by the parent each time the value of this field is updated
-  useEffect(() => props.onChange(value), [value])
+  useEffect(() => field.onChange(value), [value])
 
-  const isValid = !props.validation
+  const isValid = !field.validation
   const onChange = (event: any) => setState(prevState => ({
     ...prevState,
     value: event.target.value
   }))
 
   return (
-    <Form.FloatingLabel label={props.label}>
+    <Form.FloatingLabel label={field.name}>
       <Form.Control
         ref={ref}
-        name={props.label.toLowerCase()}
-        as={props.as || 'input'}
-        type={props.type}
+        name={field.name}
+        as={field.as || 'input'}
+        type={field.type}
         isValid={wasUnfocused && isValid}
         isInvalid={wasUnfocused && !isValid}
-        placeholder={props.placeholder}
+        placeholder={field.placeholder}
         onChange={onChange}
       />
       <Collapse in={wasUnfocused && !isValid}>
         <Form.Control.Feedback type="invalid">
-          {props.validation}
+          {field.validation}
         </Form.Control.Feedback>
       </Collapse>
     </Form.FloatingLabel>
   )
 }
+
+// const FauxForm = () =>
+//   <Card.Body as={Form} data-netlify="true">
+//     <input type="hidden" name="form-name" value="message-us-form"/>
+//     <div className="d-flex flex-column gap-vertical-3 align-items-center">
+//       <Row xs={1} md={2} className="gap-vertical-3 gap-vertical-md-0 w-100">
+//         <Col as={Form.FloatingLabel}>
+//           <Placeholder as="input" name="name" type="text" className="form-control"/>
+//         </Col>
+//         <Col as={Form.FloatingLabel}>
+//           <Placeholder as="input" name="email" type="email" className="form-control"/>
+//         </Col>
+//       </Row>
+//       <Row xs={1} className="w-100">
+//         <Col as={Form.FloatingLabel} className="d-flex">
+//           <Placeholder as="input" name="subject" type="text" className="form-control"/>
+//         </Col>
+//       </Row>
+//       <Row xs={1} className="w-100">
+//         <Col as={Form.FloatingLabel} className="d-flex">
+//           <Placeholder as="textarea" name="message" type="text" className="form-control"/>
+//         </Col>
+//       </Row>
+//       <Button variant="dates-primary" disabled>
+//         Submit
+//       </Button>
+//     </div>
+//   </Card.Body>

@@ -18,12 +18,10 @@ import classNames from 'classnames'
 import Image, { StaticImageData } from 'next/image'
 import { Button, Card, Col, Collapse, Fade, Row } from 'react-bootstrap'
 import { useMediaQueryMatches } from '@/components/hooks/useMediaQuery'
+import useWaypoint, { Position } from '@restart/ui/useWaypoint'
 
-type TeamMemberImageProps = {
-  src: StaticImageData
-  name: string
-  noLazy?: boolean
-}
+type TeamMemberImageProps = { src: StaticImageData, name: string, noLazy?: boolean }
+
 const TeamMemberImage = (props: TeamMemberImageProps) =>
   <div className="mb-3 mb-lg-0 mx-1 mx-lg-0">
     <Image
@@ -34,19 +32,24 @@ const TeamMemberImage = (props: TeamMemberImageProps) =>
       loading={props.noLazy ? 'eager' : 'lazy'}/>
   </div>
 
-type TeamMemberDescriptionProps = PropsWithChildren & {
-  occupation: string
-}
+type TeamMemberDescriptionProps = PropsWithChildren<{ occupation: string, hasIntersected: boolean }>
+type TeamMemberDescriptionState = { subtitleFadedIn: boolean, collapsed: boolean }
+
 function TeamMemberDescription(props: TeamMemberDescriptionProps) {
   const isBelowLg = useMediaQueryMatches()
-  const [subtitleFadedIn, setSubtitleFadedIn] = useState(isBelowLg)
-  const [collapsed, setCollapsed] = useState(true)
-
-  const handleSubtitleFadedIn = () => setSubtitleFadedIn(true)
-
+  const [{ subtitleFadedIn, collapsed }, setState] = useState<TeamMemberDescriptionState>({
+    subtitleFadedIn: isBelowLg,
+    collapsed: true
+  })
+  const handleOnEntered = () => setState(prevState => ({ ...prevState, subtitleFadedIn: true }))
+  const handleOnClick = () => setState(prevState => ({ ...prevState, collapsed: !prevState.collapsed }))
   return (
     <>
-      <Fade appear={!isBelowLg} in={true} onEntered={handleSubtitleFadedIn} timeout={600}>
+      <Fade
+        appear={!isBelowLg}
+        in={subtitleFadedIn || props.hasIntersected}
+        onEntered={handleOnEntered}
+        timeout={600}>
         <Card.Subtitle
           as={isBelowLg ? 'div' : 'h3'}
           className={isBelowLg ? 'd-flex' : 'h5 fst-italic mb-2'}>
@@ -54,7 +57,7 @@ function TeamMemberDescription(props: TeamMemberDescriptionProps) {
             <Button
               variant="dropdown"
               className={classNames('p-0 flex-fill', collapsed ? 'collapsed' : null)}
-              onClick={() => setCollapsed(!collapsed)}>
+              onClick={handleOnClick}>
               <h3 className="h5 fst-italic mb-0">{props.occupation}</h3>
             </Button>
           }
@@ -62,13 +65,13 @@ function TeamMemberDescription(props: TeamMemberDescriptionProps) {
       </Fade>
       <Fade appear={!isBelowLg} in={subtitleFadedIn}>
         <div>
-          {!isBelowLg ? props.children : (
+          {!isBelowLg ? props.children :
             <Collapse appear={false} mountOnEnter={false} in={!isBelowLg || !collapsed}>
               <div className={isBelowLg ? 'mt-2' : undefined}>
                 {props.children}
               </div>
             </Collapse>
-          )}
+          }
         </div>
       </Fade>
     </>
@@ -76,13 +79,26 @@ function TeamMemberDescription(props: TeamMemberDescriptionProps) {
 }
 
 export type TeamMemberCardLayout = 'image-left' | 'image-right'
-export type TeamMemberCardProps = TeamMemberImageProps & TeamMemberDescriptionProps & {
+export type TeamMemberCardProps = PropsWithChildren<{
+  src: StaticImageData
+  name: string
+  noLazy?: boolean
+  occupation: string
   direction: TeamMemberCardLayout
-}
+}>
 
 export default function TeamMemberCard(props: TeamMemberCardProps) {
+  const [hasIntersected, setHasIntersected] = useState(false)
+  const [ref, setRef] = useState<HTMLDivElement | null>(null)
+  useWaypoint(ref, (details) => {
+    // if we haven't intersected with this card yet
+    if(!hasIntersected && details.position === Position.INSIDE) {
+      // we set a flag that it has intersected
+      setHasIntersected(true)
+    }
+  }, { rootMargin: { top: -300, bottom: -300 } })
   return (
-    <Card className="card-team-member">
+    <Card ref={setRef} className="card-team-member">
       <Card.Header>
         <Card.Title as="h2" className="mb-0">
           {props.name}
@@ -93,13 +109,21 @@ export default function TeamMemberCard(props: TeamMemberCardProps) {
           <Col lg={props.direction === 'image-left' ? 5 : 7}>
             {props.direction === 'image-left' ?
               <TeamMemberImage src={props.src} name={props.name} noLazy={props.noLazy}/> :
-              <TeamMemberDescription occupation={props.occupation}>{props.children}</TeamMemberDescription>
+              <TeamMemberDescription
+                hasIntersected={hasIntersected}
+                occupation={props.occupation}>
+                {props.children}
+              </TeamMemberDescription>
             }
           </Col>
           <Col lg={props.direction === 'image-right' ? 5 : 7}>
             {props.direction === 'image-right' ?
               <TeamMemberImage src={props.src} name={props.name} noLazy={props.noLazy}/> :
-              <TeamMemberDescription occupation={props.occupation}>{props.children}</TeamMemberDescription>
+              <TeamMemberDescription
+                hasIntersected={hasIntersected}
+                occupation={props.occupation}>
+                {props.children}
+              </TeamMemberDescription>
             }
           </Col>
         </Row>
