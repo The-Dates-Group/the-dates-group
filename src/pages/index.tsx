@@ -18,7 +18,7 @@ import Image from 'next/image'
 import Page from '@/components/Page'
 import ServiceCard from '@/components/ServiceCard'
 import { services } from '@/pages/services'
-import thumbnailA from '@/images/thumbnails/thumbnail-image-c-w1280.webp'
+import thumbnailA from '@/images/thumbnails/thumbnail-image-a-w1280.webp'
 import thumbnailB from '@/images/thumbnails/thumbnail-image-b-w1280.webp'
 import thumbnailC from '@/images/thumbnails/thumbnail-image-c-w1280.webp'
 
