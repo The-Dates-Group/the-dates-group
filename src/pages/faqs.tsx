@@ -20,7 +20,7 @@ import faqs from '@/data/faqs.json'
 const FAQs = () =>
   <Page title="FAQs">
     <Page.Section>
-      <Card className="card-clear">
+      <Card className="card-section">
         <Card.Header as="h1" className="text-center">
           Frequently Asked Questions
         </Card.Header>

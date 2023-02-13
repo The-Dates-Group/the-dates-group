@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import { PropsWithChildren, useState } from 'react'
+import { PropsWithChildren, useRef, useState } from 'react'
 import { Container, Image, Nav, Navbar } from 'react-bootstrap'
 import logo from '@/images/logo/logo.svg'
+import useClickOutside from '@restart/ui/useClickOutside'
 
 export type SiteNavigationItemProps = {
   href: string
@@ -34,10 +34,12 @@ export type SiteNavigationProps = PropsWithChildren
 
 export default function SiteNavigation(props: SiteNavigationProps) {
   const [expanded, setExpanded] = useState(false)
+  const toggleRef = useRef<HTMLElement>(null)
+  useClickOutside(toggleRef, () => setExpanded(false), { disabled: !expanded })
   const toggleExpanded = () => expanded ? setExpanded(false) : setExpanded(true)
   return (
-    <header className="sticky-top">
-      <Navbar expand="md" variant="dark" className="dates-bg-primary" expanded={expanded}>
+    <header ref={toggleRef} className="site-navigation">
+      <Navbar fixed="top" expand="md" variant="dark" expanded={expanded}>
         <Container fluid>
           <Navbar.Brand href="/" className="d-flex align-items-center mx-0">
             <Image alt="logo" src={logo.src} height={40} width={40} className="navbar-brand-logo"/>

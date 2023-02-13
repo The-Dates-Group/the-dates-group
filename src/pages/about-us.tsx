@@ -28,7 +28,7 @@ import lisaGreenImg from '@/images/staff/lisa-green.webp'
 const AboutUs = () =>
   <Page title="About Us">
     <Page.Section>
-      <Card className="card-clear">
+      <Card className="card-section">
         <Card.Header as="h1" className="text-center">
           Our Team
         </Card.Header>

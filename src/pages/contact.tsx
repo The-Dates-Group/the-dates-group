@@ -55,7 +55,7 @@ export default function ContactPage() {
   return (
     <Page title="Contact">
       <Page.Section>
-        <Card className="card-clear">
+        <Card className="card-section">
           <Tab.Container
             activeKey={selectedKey}
             onSelect={handleTabSelected}

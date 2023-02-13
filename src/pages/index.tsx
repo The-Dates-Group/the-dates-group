@@ -15,36 +15,60 @@
  */
 import { Button, Card, Carousel, Col, Row } from 'react-bootstrap'
 import Image from 'next/image'
+import Head from 'next/head'
 import Page from '@/components/Page'
 import ServiceCard from '@/components/ServiceCard'
 import { services } from '@/pages/services'
+import stockA from '@/images/stock/stock-image-a.webp'
 import thumbnailA from '@/images/thumbnails/thumbnail-image-a-w1280.webp'
 import thumbnailB from '@/images/thumbnails/thumbnail-image-b-w1280.webp'
 import thumbnailC from '@/images/thumbnails/thumbnail-image-c-w1280.webp'
+import YouTubeEmbed from '@/components/YouTubeEmbed'
 
+const MessageUsButton = () =>
+  <Button variant="dates-primary" href="/contact#message-us">Message Us</Button>
+const ScheduleACallButton = () =>
+  <Button variant="dates-primary" href="/contact#schedule-a-call">Schedule A Call</Button>
+const SeeAdditionalServicesButton = () =>
+  <Button variant="dates-primary" href="/services">See Additional Services</Button>
+
+// noinspection HtmlUnknownAttribute
 const HomePageHero = () =>
-  <Card className="card-clear container-fluid py-4 p-lg-5">
-    <Card.Body className="gap-vertical-3 p-2 p-sm-3">
-      <Card.Title as="h1" className="col-xxl-11 display-6 fw-bold">
-        To meet the business needs of those who dare to dream, by providing result-driven
-        solutions for both startups and existing businesses.
-      </Card.Title>
-      <Card.Text as={Col} lg={8} className="fs-5">
-        The Dates Group is here to help make your business the best it can be! By applying decades of expertise and
-        fiery passion for establishing businesses, we offer services to help organize, plan, and acquire funding for
-        your existing businesses and new startups!
-      </Card.Text>
-      <Button variant="dates-primary" href="/contact">
-        Schedule A Call
-      </Button>
-    </Card.Body>
-  </Card>
+  <>
+    <Head>
+      <link
+        // @ts-ignore
+        fetchpriority="high" // browser hint that this image is high priority on load
+        rel="preload"
+        as="image"
+        href={stockA.src}
+        type="image/webp"
+      />
+    </Head>
+    <Card className="card-clear container-fluid py-4 p-lg-5">
+      <Card.Body className="gap-vertical-3 p-2 p-sm-3">
+        <Card.Title as="h1" className="col-xxl-11 display-6 fw-bold">
+          To meet the business needs of those who dare to dream, by providing result-driven
+          solutions for both startups and existing businesses.
+        </Card.Title>
+        <Card.Text as={Col} lg={8} className="fs-5">
+          The Dates Group is here to help make your business the best it can be! By applying decades of expertise and
+          fiery passion for establishing businesses, we offer services to help organize, plan, and acquire funding for
+          your existing businesses and new startups!
+        </Card.Text>
+        <div className="gap-horizontal-2">
+          <ScheduleACallButton/>
+          <SeeAdditionalServicesButton/>
+        </div>
+      </Card.Body>
+    </Card>
+  </>
 
 const WhoWeAreSection = () =>
   <Page.Section withFade>
-    <Card className="card-clear">
+    <Card className="card-section">
       <Card.Header as="h1" className="text-center">Who We Are</Card.Header>
-      <Card.Body className="container-fluid">
+      <Card.Body className="container-fluid gap-vertical-3">
         {/* at XL screen sizes, expand from a single column to two columns */}
         <Row xs={1} lg={2} className="align-items-center flex-column-reverse flex-lg-row">
           <Col lg={7}>
@@ -69,13 +93,27 @@ const WhoWeAreSection = () =>
             </Card.Text>
           </Col>
         </Row>
+        <Row xs={1} lg={2} className="align-items-center flex-column flex-lg-row">
+          <Col lg={5} className="mb-3 mb-lg-0">
+            <Card.Title as="h2" className="text-center">Trusted Experience</Card.Title>
+            <Card.Text>
+              We have years of experience solving the needs of small businesses. With backgrounds extending from grant
+              writing, business financial services, small business banking, business and workforce development, you can
+              trust us with your prized possession, your business. Our passion is in helping people see their goals
+              realized. We are dedicated to making your dreams come true for your business.
+            </Card.Text>
+          </Col>
+          <Col lg={7}>
+            <YouTubeEmbed videoId="soRIjkFemnc" className="card-img"/>
+          </Col>
+        </Row>
       </Card.Body>
     </Card>
   </Page.Section>
 
 const ServicesSection = () =>
   <Page.Section withFade>
-    <Card className="card-clear">
+    <Card className="card-section">
       <Card.Header as="h1" className="text-center">Find The Services You Need</Card.Header>
       <Card.Body>
         <Row xs={1} lg={3} className="gap-vertical-2 gap-vertical-lg-0">
@@ -97,7 +135,7 @@ const ServicesSection = () =>
             </p>
           </Col>
           <Col lg={3} className="d-flex flex-column">
-            <Button variant="dates-primary" href="/services">See Additional Services</Button>
+            <SeeAdditionalServicesButton/>
           </Col>
         </Row>
       </Card.Footer>
@@ -106,17 +144,17 @@ const ServicesSection = () =>
 
 const ContactUsSection = () =>
   <Page.Section withFade>
-    <Card className="card-clear">
+    <Card className="card-section">
       <Card.Header as="h1" className="text-center">
         Ready to get your business funded?
       </Card.Header>
       <Card.Body>
         <Row xs={1} lg={2} className="justify-content-around">
           <Col lg={4} className="d-flex flex-column mb-2 mb-lg-0">
-            <Button variant="dates-primary" href="/contact#message-us">Message Us</Button>
+            <MessageUsButton/>
           </Col>
           <Col lg={4} className="d-flex flex-column">
-            <Button variant="dates-primary" href="/contact#schedule-a-call">Schedule A Call</Button>
+            <ScheduleACallButton/>
           </Col>
         </Row>
       </Card.Body>

@@ -13,6 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import "node_modules/bootstrap/scss/functions";
-@import "node_modules/bootstrap/scss/variables";
-@import "node_modules/bootstrap/scss/mixins/breakpoints";
+import styles from '@/styles/components/YouTubeEmbed.module.scss'
+
+export type YouTubeEmbedProps = { videoId: string, className?: string }
+
+const YouTubeEmbed = ({ videoId, className }: YouTubeEmbedProps) =>
+  <div className={styles['youtube-embed']}>
+    <iframe
+      className={className}
+      src={`https://www.youtube.com/embed/${videoId}`}
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowFullScreen
+      title="Embedded youtube"
+    />
+  </div>
+
+export default YouTubeEmbed

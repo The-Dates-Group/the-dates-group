@@ -14,15 +14,30 @@
  * limitations under the License.
  */
 .card {
+  box-shadow: 5px 5px 5px transparentize(black, 0.75);
   .card-img {
     height: 100%;
     width: 100%;
+  }
+
+  .card {
+    box-shadow: none;
   }
 }
 
 .card-clear {
   background: transparentize(#fff, 0.10);
+  // slightly harder box shadow to make sure it's visible on images
+  box-shadow: 5px 5px 5px transparentize(black, 0.65);
   border: none;
+}
+
+.card-section {
+  border: none;
+  .card-header {
+    background-color: dates-theme-color(primary-1);
+    color: dates-text-color(light);
+  }
 }
 
 .card-service {
@@ -53,7 +68,7 @@
 
   .card-header {
     background-color: dates-theme-color(primary-1);
-    border-color: dates-theme-color(tertiary-5);
+    border-color: dates-theme-color(secondary);
   }
 
   .card-body {

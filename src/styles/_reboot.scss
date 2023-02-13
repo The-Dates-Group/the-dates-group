@@ -85,11 +85,16 @@ $accordion-icon-active-color: map-get($dates-theme-text, "dates-text-light");
 @import "~bootstrap/scss/utilities/api";
 
 .fade {
-  @include transition(0.75s opacity 0.1s ease-in);
+  @include transition(0.5s opacity 0.1s ease-in);
 }
 
 .collapsing {
   &.collapse-horizontal {
-    @include transition(width 0.75s ease);
+    @include transition(width 0.5s ease);
   }
+}
+
+.vr {
+  width: 3px;
+  opacity: 100%;
 }

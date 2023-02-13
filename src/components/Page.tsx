@@ -23,7 +23,7 @@ import { FadeInOnPosition } from '@/components/helpers/waypoint-transitions'
 
 type PageSectionContainerProps = PropsWithChildren<{ className?: string }>
 const PageSectionContainer = forwardRef((props: PageSectionContainerProps, ref: ForwardedRef<any>) => (
-  <Container as="section" className={classNames('my-auto', 'py-5', props.className)} ref={ref}>
+  <Container as="section" className={classNames('my-auto', 'py-2', props.className)} ref={ref}>
     {props.children}
   </Container>
 ))

@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2023 Kaidan Gustave
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-.home-page {
-  .hero-image {
-    background-image: url("../../images/stock/stock-image-a.webp");
-    min-height: calc(100vh - 70px);
+.site-navigation {
+  height: 70px;
+  .navbar {
+    background-color: dates-theme-color(primary);
+    min-height: 70px;
   }
 }

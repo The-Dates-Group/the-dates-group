@@ -13,41 +13,56 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Col, Row } from 'react-bootstrap'
+import { Card, Col, Row } from 'react-bootstrap'
 import Page from '@/components/Page'
 import ServiceCard from '@/components/ServiceCard'
 
 export type Service = {
   title: string
   href: string
+  description?: string
 }
 
 export const services: Service[] = [
   {
-    title: 'Get Funded',
-    href: '/services/get-funded'
+    title: 'Planning',
+    href: '/services/planning'
   },
   {
-    title: 'How To Start My Business',
-    href: '/services/how-to-start-my-business'
+    title: 'Consulting',
+    href: '/services/consulting'
   },
   {
-    title: 'How To Get My 501c3 (Tax-Exempt Nonprofit)',
-    href: '/services/how-to-get-my-501c3'
+    title: 'Funding',
+    href: '/services/funding'
+  },
+  {
+    title: 'Launching',
+    href: '/services/launching'
+  },
+  {
+    title: 'Specialization',
+    href: '/services/specialization'
   }
 ]
 
 const ServicesPage = () =>
   <Page title="Services">
     <Page.Section>
-      <h1 className="h2 text-center">Services</h1>
-      <Row xs={1} sm={2} lg={3}>
-        {services.map((service, i) =>
-          <Col key={`service-${i}`} className="d-flex mb-4">
-            <ServiceCard service={service} height={133} width={200}/>
-          </Col>
-        )}
-      </Row>
+      <Card className="card-section">
+        <Card.Header as="h1" className="text-center">
+          Services
+        </Card.Header>
+        <Card.Body>
+          <Row xs={1} sm={2} lg={3} className="justify-content-center">
+            {services.map((service, i) =>
+              <Col key={`service-${i}`} className="d-flex mb-4">
+                <ServiceCard service={service} height={133} width={200}/>
+              </Col>
+            )}
+          </Row>
+        </Card.Body>
+      </Card>
     </Page.Section>
   </Page>
 

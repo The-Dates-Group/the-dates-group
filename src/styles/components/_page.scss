@@ -18,7 +18,11 @@
   //sizable chunk of the viewport, we push the footer below the viewable
   //first contentful paint and prevent content shifting when loading in
   //the SCSS module styles for the footer component.
-  min-height: 94vh;
+  min-height: calc(100vh - 70px);
 
   background-color: dates-theme-color(secondary-5);
+
+  .page-section {
+    height: 100%;
+  }
 }
