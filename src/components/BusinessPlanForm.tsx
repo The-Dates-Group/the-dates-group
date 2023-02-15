@@ -154,6 +154,7 @@ export default function BusinessPlanForm() {
       onSubmit={handleFormSubmit}>
       {({ handleSubmit, handleChange, setFieldValue, handleBlur, isValid, values, touched, errors }) =>
         <Form
+          name="business-plan-form"
           noValidate
           onSubmit={handleSubmit}
           // @ts-ignore
