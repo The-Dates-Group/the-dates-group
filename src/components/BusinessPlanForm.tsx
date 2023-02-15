@@ -91,7 +91,7 @@ export default function BusinessPlanForm() {
     isValidForSubmit: false,
     showResultModal: false
   })
-  const [form, submissionState] = useFormSubmission<BusinessPlanFormValues>('business-plan-form', formatFieldName)
+  const [form, submissionState] = useFormSubmission<BusinessPlanFormValues>('Business Plan Form', formatFieldName)
   const router = useRouter()
 
   const validateForm = (values: BusinessPlanFormValues) => {
@@ -135,11 +135,11 @@ export default function BusinessPlanForm() {
   }
 
   return <Card.Body>
-    {/* fake form to tell netlify to handle this form submission */}
-    {/*<form hidden data-netlify="true">*/}
-    {/*  <input type="hidden" name="form-name" value="business-plan-form"/>*/}
-    {/*  {Object.keys(initialValues).map(key => <input key={key} type="text" name={key}/>)}*/}
-    {/*</form>*/}
+    {/* fake form to help netlify create this form */}
+    <form hidden name="Business Plan Form" data-netlify="true">
+      <input type="hidden" name="form-name" value="Business Plan Form"/>
+      {Object.keys(initialValues).map(key => <input key={key} type="text" name={formatFieldName(key)}/>)}
+    </form>
     <Modal show={state.showResultModal} enforceFocus={true} backdrop="static">
       <Modal.Header closeButton onClick={handleResultModalDismissed} className="h3 mb-0">
         {submissionState.isSuccess ? 'Thank you!' : 'Uh Oh!'}
@@ -153,14 +153,7 @@ export default function BusinessPlanForm() {
       validate={validateForm}
       onSubmit={handleFormSubmit}>
       {({ handleSubmit, handleChange, setFieldValue, handleBlur, isValid, values, touched, errors }) =>
-        <Form
-          name="business-plan-form"
-          noValidate
-          onSubmit={handleSubmit}
-          // @ts-ignore
-          netlify
-          data-netlify="true">
-          <input type="hidden" name="form-name" value="business-plan-form"/>
+        <Form noValidate onSubmit={handleSubmit}>
           <Card.Subtitle as="h2" className="text-center mb-3">
             Personal Information
           </Card.Subtitle>
