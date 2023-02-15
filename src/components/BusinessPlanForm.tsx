@@ -135,6 +135,11 @@ export default function BusinessPlanForm() {
   }
 
   return <Card.Body>
+    {/* fake form to tell netlify to handle this form submission */}
+    <form hidden data-netlify="true">
+      <input type="hidden" name="form-name" value="business-plan-form"/>
+      {Object.keys(initialValues).map(key => <input key={key} type="text" name={key}/>)}
+    </form>
     <Modal show={state.showResultModal} enforceFocus={true} backdrop="static">
       <Modal.Header closeButton onClick={handleResultModalDismissed} className="h3 mb-0">
         {submissionState.isSuccess ? 'Thank you!' : 'Uh Oh!'}
@@ -143,17 +148,13 @@ export default function BusinessPlanForm() {
         {submissionState.isSuccess ? 'Your message was submitted!' : 'Something went wrong, try again later!'}
       </Modal.Body>
     </Modal>
-    {/* fake form to tell netlify to handle this form submission */}
-    <form hidden data-netlify="true">
-      <input type="hidden" name="form-name" value="business-plan-form"/>
-      {Object.keys(initialValues).map(key => <input key={key} type="text" name={key}/>)}
-    </form>
     <Formik<BusinessPlanFormValues>
       initialValues={initialValues}
       validate={validateForm}
       onSubmit={handleFormSubmit}>
       {({ handleSubmit, handleChange, setFieldValue, handleBlur, isValid, values, touched, errors }) =>
         <Form noValidate onSubmit={handleSubmit}>
+          <input type="hidden" name="form-name" value="business-plan-form"/>
           <Card.Subtitle as="h2" className="text-center mb-3">
             Personal Information
           </Card.Subtitle>
