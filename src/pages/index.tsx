@@ -13,17 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Button, Card, Carousel, Col, Row } from 'react-bootstrap'
-import Image from 'next/image'
+import { Button, Card, Col, Row } from 'react-bootstrap'
 import Head from 'next/head'
 import Page from '@/components/Page'
 import ServiceCard from '@/components/ServiceCard'
 import { services } from '@/pages/services'
 import stockA from '@/images/stock/stock-image-a.webp'
-import thumbnailA from '@/images/thumbnails/thumbnail-image-a-w1280.webp'
-import thumbnailB from '@/images/thumbnails/thumbnail-image-b-w1280.webp'
-import thumbnailC from '@/images/thumbnails/thumbnail-image-c-w1280.webp'
-import YouTubeEmbed from '@/components/YouTubeEmbed'
+import WhoWeAre from '@/components/WhoWeAre'
 
 const MessageUsButton = () =>
   <Button variant="dates-primary" href="/contact#message-us">Message Us</Button>
@@ -56,7 +52,7 @@ const HomePageHero = () =>
           fiery passion for establishing businesses, we offer services to help organize, plan, and acquire funding for
           your existing businesses and new startups!
         </Card.Text>
-        <div className="gap-horizontal-2">
+        <div className="d-flex flex-column flex-md-row gap-vertical-2 gap-vertical-md-0 gap-horizontal-md-2">
           <ScheduleACallButton/>
           <SeeAdditionalServicesButton/>
         </div>
@@ -66,49 +62,7 @@ const HomePageHero = () =>
 
 const WhoWeAreSection = () =>
   <Page.Section withFade>
-    <Card className="card-section">
-      <Card.Header as="h1" className="text-center">Who We Are</Card.Header>
-      <Card.Body className="container-fluid gap-vertical-3">
-        {/* at XL screen sizes, expand from a single column to two columns */}
-        <Row xs={1} lg={2} className="align-items-center flex-column-reverse flex-lg-row">
-          <Col lg={7}>
-            <Carousel controls={false} indicators={false} touch={false} fade={true} pause={false}>
-              {[thumbnailA, thumbnailB, thumbnailC].map((thumbnail, index) =>
-                <Image
-                  key={`thumbnail-${index}`}
-                  className="card-img carousel-item"
-                  src={thumbnail}
-                  alt="thumbnail"
-                />
-              )}
-            </Carousel>
-          </Col>
-          <Col lg={5} className="mb-3 mb-lg-0">
-            <Card.Title as="h2" className="text-center">Certified & Professional</Card.Title>
-            <Card.Text>
-              We are a Limited Liability Corporation with a team of professionals to meet your needs. We're proud to
-              have expert, proven grant writers as well as a notary public. We are a minority-owned, woman-owned
-              business. We are committed to providing you with professional, efficient and masterful solutions to take
-              your business to it's potential.
-            </Card.Text>
-          </Col>
-        </Row>
-        <Row xs={1} lg={2} className="align-items-center flex-column flex-lg-row">
-          <Col lg={5} className="mb-3 mb-lg-0">
-            <Card.Title as="h2" className="text-center">Trusted Experience</Card.Title>
-            <Card.Text>
-              We have years of experience solving the needs of small businesses. With backgrounds extending from grant
-              writing, business financial services, small business banking, business and workforce development, you can
-              trust us with your prized possession, your business. Our passion is in helping people see their goals
-              realized. We are dedicated to making your dreams come true for your business.
-            </Card.Text>
-          </Col>
-          <Col lg={7}>
-            <YouTubeEmbed videoId="soRIjkFemnc" className="card-img"/>
-          </Col>
-        </Row>
-      </Card.Body>
-    </Card>
+    <WhoWeAre/>
   </Page.Section>
 
 const ServicesSection = () =>

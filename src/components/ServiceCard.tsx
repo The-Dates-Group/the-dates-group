@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type { PropsWithChildren } from 'react'
 import type { Service } from '@/pages/services'
 import { Card } from 'react-bootstrap'
 
-export type ServiceCardProps = PropsWithChildren & {
+export type ServiceCardProps = {
   service: Service
   height?: number | string
   width?: number | string
@@ -27,9 +26,11 @@ const ServiceCard = (props: ServiceCardProps) =>
   <Card className="card-service align-self-stretch flex-fill">
     <Card.Body className="d-flex align-items-center justify-content-center">
       <Card.Title as="h2" className="h3 text-center mb-0">
-        <a href={props.service.href} className="stretched-link">{props.service.title}</a>
+        <a href={props.service.href} className="stretched-link">
+          {props.service.icon ? <props.service.icon className="me-2"/> : null}
+          {props.service.title}
+        </a>
       </Card.Title>
-      <Card.Text>{props.children}</Card.Text>
     </Card.Body>
   </Card>
 

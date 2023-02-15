@@ -16,16 +16,16 @@
 import type { ElementType, ForwardedRef, PropsWithChildren } from 'react'
 import { Component, forwardRef, useState } from 'react'
 import classNames from 'classnames'
-import HeroImage from './HeroImage'
 import { Container } from 'react-bootstrap'
 import Head from 'next/head'
+import HeroImage from '@/components/HeroImage'
 import { FadeInOnPosition } from '@/components/helpers/waypoint-transitions'
 
 type PageSectionContainerProps = PropsWithChildren<{ className?: string }>
 const PageSectionContainer = forwardRef((props: PageSectionContainerProps, ref: ForwardedRef<any>) => (
-  <Container as="section" className={classNames('my-auto', 'py-2', props.className)} ref={ref}>
+  <section className={classNames('my-auto', 'py-2', props.className)} ref={ref}>
     {props.children}
-  </Container>
+  </section>
 ))
 
 export type PageSectionProps = PageSectionContainerProps & {
@@ -75,7 +75,7 @@ export default class Page extends Component<PageProps> {
               <Hero/>
             </HeroImage>
           )}
-          {children}
+          <Container>{children}</Container>
         </main>
       </>
     )

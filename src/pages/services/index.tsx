@@ -13,56 +13,106 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Card, Col, Row } from 'react-bootstrap'
+import { Button, Card, Col, ListGroup, Row } from 'react-bootstrap'
 import Page from '@/components/Page'
-import ServiceCard from '@/components/ServiceCard'
+import { Award, CashCoin, ChatLeftDots, ClipboardCheck, Icon, RocketTakeoff } from 'react-bootstrap-icons'
+import { ReactElement } from 'react'
 
 export type Service = {
   title: string
   href: string
+  icon?: Icon
   description?: string
+  features?: string[]
+  render?(): ReactElement | null
 }
 
 export const services: Service[] = [
   {
     title: 'Planning',
-    href: '/services/planning'
+    href: '/services/planning',
+    icon: ClipboardCheck,
+    features: [
+      'Business Plan',
+      'Investor Deck And Plan',
+      'Strategic Plan',
+      'Estate Plan'
+    ]
   },
   {
     title: 'Consulting',
-    href: '/services/consulting'
+    href: '/services/consulting',
+    icon: ChatLeftDots,
+    features: [
+      'Business Operations Monitoring',
+      'Board Development and IRS Compliance',
+      'Nonprofit Consultation',
+      'General Consultation'
+    ]
   },
   {
     title: 'Funding',
-    href: '/services/funding'
+    href: '/services/funding',
+    icon: CashCoin,
+    features: [
+      'Grant Searches',
+      'Grant Writing',
+      'Crowdfunding',
+      'Certifications (Including 8A Federal Contracts)'
+    ]
   },
   {
     title: 'Launching',
-    href: '/services/launching'
+    href: '/services/launching',
+    icon: RocketTakeoff,
+    features: [
+      'Ready. Set. Launch!',
+      '60-Day Nonprofit Launch'
+    ]
   },
   {
     title: 'Specialization',
-    href: '/services/specialization'
+    href: '/services/specialization',
+    icon: Award,
+    features: [
+      'Janitorial Services Program',
+      'Authors and Artists',
+      'Growth Strategy Consultation',
+      'Church Growth Program',
+      'Fitness Influencer Program'
+    ]
   }
 ]
 
 const ServicesPage = () =>
   <Page title="Services">
     <Page.Section>
-      <Card className="card-section">
-        <Card.Header as="h1" className="text-center">
-          Services
-        </Card.Header>
-        <Card.Body>
-          <Row xs={1} sm={2} lg={3} className="justify-content-center">
-            {services.map((service, i) =>
-              <Col key={`service-${i}`} className="d-flex mb-4">
-                <ServiceCard service={service} height={133} width={200}/>
-              </Col>
-            )}
-          </Row>
-        </Card.Body>
-      </Card>
+      <Row xs={1} md={2} className="d-flex justify-content-center">
+        {services.map((service, i) =>
+          <Col key={`service-${i}`} xs={12} md={6} className="d-flex">
+            <Card className="card-section my-2 my-md-3 d-flex flex-fill">
+              <Card.Header as="h2" className="mb-0 text-center">
+                {service.icon ? <service.icon className="me-2"/> : null}
+                {service.title}
+              </Card.Header>
+              {!service.features ? null : (
+                <ListGroup variant="flush" className="border-bottom border-top">
+                  {service.features.map((feature, i) =>
+                    <ListGroup.Item key={`feature-${i}`}>
+                      {feature}
+                    </ListGroup.Item>
+                  )}
+                </ListGroup>
+              )}
+              <Card.Body className="d-flex">
+                <Button variant="dates-primary-2" href={service.href} className="mt-auto flex-fill">
+                  Learn More
+                </Button>
+              </Card.Body>
+            </Card>
+          </Col>
+        )}
+      </Row>
     </Page.Section>
   </Page>
 

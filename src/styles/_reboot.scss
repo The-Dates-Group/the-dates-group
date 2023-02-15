@@ -67,7 +67,7 @@ $accordion-icon-active-color: map-get($dates-theme-text, "dates-text-light");
 //@import "bootstrap/scss/badge";
 //@import "bootstrap/scss/alert";
 @import "bootstrap/scss/progress"; // required
-//@import "bootstrap/scss/list-group";
+@import "bootstrap/scss/list-group"; // required
 @import "bootstrap/scss/close"; // required
 //@import "bootstrap/scss/toasts";
 @import "bootstrap/scss/modal"; // required

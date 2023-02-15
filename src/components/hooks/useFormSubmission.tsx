@@ -22,7 +22,7 @@ export type FormSubmissionState = {
   readonly isSuccess: boolean
 }
 
-export class FormSubmission<F> {
+export class FormSubmission<F extends object> {
   private static config: AxiosRequestConfig = {
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
@@ -31,17 +31,29 @@ export class FormSubmission<F> {
 
   private readonly requester: Requester
   private readonly setState: Dispatch<SetStateAction<FormSubmissionState>>
+  private readonly formatFieldNames?: (property: string) => string
 
   readonly name: string
 
-  constructor(requester: Requester, setState: Dispatch<SetStateAction<FormSubmissionState>>, name: string) {
+  constructor(
+    requester: Requester,
+    setState: Dispatch<SetStateAction<FormSubmissionState>>,
+    name: string,
+    formatFieldNames?: (property: string) => string
+  ) {
     this.requester = requester
     this.setState = setState
     this.name = name
+    this.formatFieldNames = formatFieldNames
   }
 
   submit(form: F): Promise<boolean> {
-    const body = { ...form, 'form-name': this.name }
+    const body = { 'form-name': this.name } as any
+    Object.keys(form).forEach(key => {
+      const value = (form as any)[key]
+      const bodyKey = this.formatFieldNames ? this.formatFieldNames(key) : key
+      body[bodyKey] = value
+    })
     console.debug('Sending form:', body)
     return this.requester.axios.post('/', body, FormSubmission.config)
       .then(response => {
@@ -60,9 +72,12 @@ export class FormSubmission<F> {
   }
 }
 
-export default function useFormSubmission<F>(name: string): [form: FormSubmission<F>, state: FormSubmissionState] {
+export default function useFormSubmission<F extends object>(
+  name: string,
+  formatFieldNames?: (property: string) => string
+): [form: FormSubmission<F>, state: FormSubmissionState] {
   const requester = useRequester()
   const [state, setState] = useState<FormSubmissionState>({ isComplete: false, isSuccess: false })
-  const form = new FormSubmission(requester, setState, name)
+  const form = new FormSubmission(requester, setState, name, formatFieldNames)
   return [form, state]
 }

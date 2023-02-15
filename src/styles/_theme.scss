@@ -61,6 +61,36 @@
   )
 }
 
+// button variant
+.btn-dates-primary-1 {
+  @include button-variant(
+      dates-theme-color(primary-1),
+      dates-theme-color(primary-1),
+      dates-text-color(light),
+      dates-theme-color(primary-3),
+      dates-theme-color(primary-1),
+      dates-text-color(light),
+      dates-theme-color(primary-3),
+      dates-theme-color(primary-1),
+      dates-text-color(light)
+  )
+}
+
+// button variant
+.btn-dates-primary-2 {
+  @include button-variant(
+      dates-theme-color(primary-2),
+      dates-theme-color(primary-2),
+      dates-text-color(light),
+      dates-theme-color(primary-4),
+      dates-theme-color(primary-2),
+      dates-text-color(light),
+      dates-theme-color(primary-4),
+      dates-theme-color(primary-2),
+      dates-text-color(light)
+  )
+}
+
 .btn-dropdown {
   background-color: transparent;
   border: none !important;

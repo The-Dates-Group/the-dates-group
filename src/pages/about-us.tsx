@@ -13,20 +13,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Card } from 'react-bootstrap'
+import { Card, Row } from 'react-bootstrap'
 import Page from '@/components/Page'
 import TeamMemberCard from '@/components/TeamMemberCard'
-import { MediaQuery } from '@/components/hooks/useMediaQuery'
+import { MediaQuery, useMediaQueryMatches } from '@/components/hooks/useMediaQuery'
 
+import femaleFounderCollectiveLogo from '@/images/associations/female-founder-collective-logo.webp'
+import grantProfessionalsAssociationLogo from '@/images/associations/grant-professionals-association-logo.webp'
+import nationalNotaryAssociationLogo from '@/images/associations/national-notary-association-logo.webp'
+import the10thHouseLogo from '@/images/associations/the-10th-house-logo.webp'
 import chiDatesImg from '@/images/staff/chi-dates.webp'
 import melissaWalterImg from '@/images/staff/melissa-walter.webp'
 import jodiDoaneImg from '@/images/staff/jodi-doane.webp'
 import cynthiaMcMillanImg from '@/images/staff/cynthia-mcmillan.webp'
 import maggyFoucheImg from '@/images/staff/maggy-fouche.webp'
 import lisaGreenImg from '@/images/staff/lisa-green.webp'
+import WhoWeAre from '@/components/WhoWeAre'
+import Image, { StaticImageData } from 'next/image'
+
+type AssociationLogoProps = {
+  name: string
+  src: StaticImageData
+  url: string
+}
+
+function AssociationLogo(props: AssociationLogoProps) {
+  const isBelowMd = useMediaQueryMatches()
+  return (
+    <div className="h-100 d-flex justify-content-center">
+      <div className="position-relative">
+        <Image src={props.src} alt={`${props.name} logo`} height={isBelowMd ? 200 : 300}/>
+        <a href={props.url} className="stretched-link" target="_blank" rel="noreferrer"></a>
+      </div>
+    </div>
+  )
+}
 
 const AboutUs = () =>
   <Page title="About Us">
+    <Page.Section>
+      <WhoWeAre/>
+    </Page.Section>
     <Page.Section>
       <Card className="card-section">
         <Card.Header as="h1" className="text-center">
@@ -131,6 +158,40 @@ const AboutUs = () =>
               </Card.Text>
             </TeamMemberCard>
           </MediaQuery.Provider>
+        </Card.Body>
+      </Card>
+    </Page.Section>
+    <Page.Section>
+      <Card className="card-section">
+        <Card.Header as="h1" className="text-center">
+          Proud Members Of
+        </Card.Header>
+        <Card.Body>
+          <Row xs={1} md={2}>
+            <MediaQuery.Provider boundary="max-width" breakpoint="md">
+
+              <AssociationLogo
+                name="female founder collective"
+                src={femaleFounderCollectiveLogo}
+                url="https://femalefoundercollective.com/"
+              />
+              <AssociationLogo
+                name="grant professionals association"
+                src={grantProfessionalsAssociationLogo}
+                url="https://grantprofessionals.org/"
+              />
+              <AssociationLogo
+                name="national notary association"
+                src={nationalNotaryAssociationLogo}
+                url="https://www.nationalnotary.org/"
+              />
+              <AssociationLogo
+                name="the 10th house"
+                src={the10thHouseLogo}
+                url="https://the10thhouse.femalefoundercollective.com/"
+              />
+            </MediaQuery.Provider>
+          </Row>
         </Card.Body>
       </Card>
     </Page.Section>
