@@ -45,10 +45,21 @@ export class FormSubmission<F extends object> {
   }
 
   submit(form: F): Promise<boolean> {
-    const body = { 'form-name': this.name } as any
-    Object.keys(form).forEach(key => {
-      body[FormSubmission.formatFieldName(key)] = (form as any)[key]
-    })
+    const body = { 'form-name': this.name } as Record<string, string>
+    for(const key of Object.keys(form)) {
+      let value = (form as any)[key]
+      if(!value) {
+        value = 'None'
+      } else if(typeof value === 'string') {
+        value = value.trim()
+        if(value.length === 0)
+          value = 'None'
+      } else {
+        value = value.toString()
+      }
+      const formattedKey = FormSubmission.formatFieldName(key)
+      body[formattedKey] = value
+    }
     console.debug('Sending form:', body)
     return this.requester.axios.post('/', body, FormSubmission.config)
       .then(response => {
@@ -65,6 +76,7 @@ export class FormSubmission<F extends object> {
         return isSuccess
       })
   }
+
   static formatFieldName(name: string) {
     const charArray = []
     let lastWasUppercase = false
