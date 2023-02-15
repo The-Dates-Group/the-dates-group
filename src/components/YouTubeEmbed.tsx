@@ -20,6 +20,7 @@ export type YouTubeEmbedProps = { videoId: string, className?: string }
 const YouTubeEmbed = ({ videoId, className }: YouTubeEmbedProps) =>
   <div className={styles['youtube-embed']}>
     <iframe
+      loading="lazy"
       className={className}
       src={`https://www.youtube.com/embed/${videoId}`}
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

@@ -91,7 +91,7 @@ export default function BusinessPlanForm() {
     isValidForSubmit: false,
     showResultModal: false
   })
-  const [form, submissionState] = useFormSubmission<BusinessPlanFormValues>('Business Plan Form', formatFieldName)
+  const [form, submissionState] = useFormSubmission<BusinessPlanFormValues>('business-plan-form', formatFieldName)
   const router = useRouter()
 
   const validateForm = (values: BusinessPlanFormValues) => {
@@ -145,8 +145,8 @@ export default function BusinessPlanForm() {
     </Modal>
     {/* fake form to tell netlify to handle this form submission */}
     <form hidden data-netlify="true">
-      <input type="hidden" name="form-name" value="Business Plan Form"/>
-      {Object.keys(initialValues).map(key => <input key={key} type="text" name={formatFieldName(key)}/>)}
+      <input type="hidden" name="form-name" value="business-plan-form"/>
+      {Object.keys(initialValues).map(key => <input key={key} type="text" name={key}/>)}
     </form>
     <Formik<BusinessPlanFormValues>
       initialValues={initialValues}
