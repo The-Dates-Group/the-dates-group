@@ -31,28 +31,23 @@ export class FormSubmission<F extends object> {
 
   private readonly requester: Requester
   private readonly setState: Dispatch<SetStateAction<FormSubmissionState>>
-  private readonly formatFieldNames?: (property: string) => string
 
   readonly name: string
 
   constructor(
     requester: Requester,
     setState: Dispatch<SetStateAction<FormSubmissionState>>,
-    name: string,
-    formatFieldNames?: (property: string) => string
+    name: string
   ) {
     this.requester = requester
     this.setState = setState
     this.name = name
-    this.formatFieldNames = formatFieldNames
   }
 
   submit(form: F): Promise<boolean> {
     const body = { 'form-name': this.name } as any
     Object.keys(form).forEach(key => {
-      const value = (form as any)[key]
-      const bodyKey = this.formatFieldNames ? this.formatFieldNames(key) : key
-      body[bodyKey] = value
+      body[FormSubmission.formatFieldName(key)] = (form as any)[key]
     })
     console.debug('Sending form:', body)
     return this.requester.axios.post('/', body, FormSubmission.config)
@@ -70,14 +65,39 @@ export class FormSubmission<F extends object> {
         return isSuccess
       })
   }
+  static formatFieldName(name: string) {
+    const charArray = []
+    let lastWasUppercase = false
+    for(let i = 0; i < name.length; i++) {
+      const char = name[i]
+
+      // first char is always uppercase
+      if(i === 0) {
+        charArray.push(char.toUpperCase())
+        continue
+      }
+
+      // char is uppercase
+      if(char === char.toUpperCase()) {
+        if(!lastWasUppercase) {
+          charArray.push(' ')
+          lastWasUppercase = true
+        }
+        charArray.push(char)
+        continue
+      }
+      lastWasUppercase = false
+      charArray.push(char)
+    }
+    return charArray.join('')
+  }
 }
 
 export default function useFormSubmission<F extends object>(
-  name: string,
-  formatFieldNames?: (property: string) => string
+  name: string
 ): [form: FormSubmission<F>, state: FormSubmissionState] {
   const requester = useRequester()
   const [state, setState] = useState<FormSubmissionState>({ isComplete: false, isSuccess: false })
-  const form = new FormSubmission(requester, setState, name, formatFieldNames)
+  const form = new FormSubmission(requester, setState, name)
   return [form, state]
 }

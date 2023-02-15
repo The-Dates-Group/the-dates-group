@@ -13,89 +13,51 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Children, PropsWithChildren, useEffect, useState } from 'react'
-import { Button, Card, Col, Collapse, Form, InputGroup, Modal, Row } from 'react-bootstrap'
-import { useUnfocus } from '@/components/hooks/useFocus'
-import { emailRegex } from '@/utils/regexes'
-import { MessageUsPost } from '@/lib/common/data-types'
-import useFormSubmission from '@/components/hooks/useFormSubmission'
+import { FunctionComponent, useState } from 'react'
 import { useRouter } from 'next/router'
-import { NetlifyForm, useNetlifyFormField } from '@/components/hooks/useNetlifyForm'
+import { Button, Card, Col, Collapse, FloatingLabel, Form, Modal, Row } from 'react-bootstrap'
+import { Formik, FormikProps } from 'formik'
+import { emailRegex } from '@/utils/regexes'
+import useFormSubmission from '@/components/hooks/useFormSubmission'
 import { fromPrevState } from '@/utils/component-utils'
+import NetlifyForm from '@/components/NetlifyForm'
 
-const validateName = (name: string): string | undefined => {
-  if(name.length < 1) return 'Please enter your name'
+type MessageUsFormValues = {
+  name: string
+  email: string
+  subject: string
+  message: string
 }
 
-const validateEmail = (email: string): string | undefined => {
-  if(email.length < 1) return 'Please provide an email address'
-  if(!emailRegex.test(email)) return 'Email address is not valid'
+const validateForm = ({ email, message, name, subject }: MessageUsFormValues) => {
+  const errors: Partial<MessageUsFormValues> = {}
+
+  if(name.length < 1) errors.name = 'Please enter your name'
+
+  if(email.length < 1) errors.email = 'Please provide an email address'
+  else if(!emailRegex.test(email)) errors.email = 'Email address is not valid'
+
+  if(subject.length < 1) errors.subject = 'Please provide a subject'
+
+  if(message.length < 1) errors.message = 'Please provide a message'
+
+  return errors
 }
 
-const validateSubject = (subject: string): string | undefined => {
-  if(subject.length < 1) return 'Please provide a subject'
+const initialValues: MessageUsFormValues = {
+  name: '',
+  email: '',
+  subject: '',
+  message: ''
 }
 
-const validateMessage = (message: string): string | undefined => {
-  if(message.length < 1) return 'Please provide a message'
-}
-
-export type FieldData = {
-  readonly value: string
-  readonly validation?: string
-}
-
-export type MessageUsFormProps = {}
-
-export type MessageUsFormState = {
-  readonly name: FieldData
-  readonly email: FieldData
-  readonly subject: FieldData
-  readonly message: FieldData
-  readonly showResultModal: boolean
-}
-
-export type MessageUsFormField = {
-  readonly name: string
-  readonly type: string
-  readonly placeholder: string
-  readonly value: string
-  readonly validation?: string
-  readonly onChange: (value: string) => void
-  readonly as?: 'input' | 'textarea'
-}
-
-export default function MessageUsForm(_: MessageUsFormProps) {
+export default function MessageUsForm() {
   const router = useRouter()
-  const [submission, submissionState] = useFormSubmission<MessageUsPost>('message-us-form')
-  const [{ email, message, name, showResultModal, subject }, setState] = useState<MessageUsFormState>({
-    name: { value: '' },
-    email: { value: '' },
-    subject: { value: '' },
-    message: { value: '' },
-    showResultModal: false
-  })
+  const [form, submissionState] = useFormSubmission<MessageUsFormValues>('Message Us Form')
+  const [state, setState] = useState({ showResultModal: false })
 
-  const isValidForSubmission = () => {
-    if(name.validation) return false
-    else if(email.validation) return false
-    else if(subject.validation) return false
-    else if(message.validation) return false
-    return !submissionState.isComplete
-  }
-
-  const handleSubmit = async (event: any) => {
-    event.preventDefault()
-    // check the form one last time
-    if(!isValidForSubmission()) throw new Error('Form was submitted when invalid for submission!')
-    // submit form
-    await submission.submit({
-      name: name.value,
-      email: email.value,
-      subject: subject.value,
-      message: message.value
-    })
-    // regardless of whether it's successful, we will display the result modal
+  const handleFormSubmit = async (values: MessageUsFormValues) => {
+    await form.submit(values)
     setState(fromPrevState({ showResultModal: true }))
   }
 
@@ -113,115 +75,133 @@ export default function MessageUsForm(_: MessageUsFormProps) {
     setState(fromPrevState({ showResultModal: false }))
   }
 
-  return (
-    <NetlifyForm.Provider<MessageUsFormField> name="message-us-form" fields={[
-      {
-        name: 'Name',
-        type: 'text',
-        placeholder: 'John Smith',
-        onChange: (value: string) =>
-          setState(fromPrevState({ name: { value, validation: validateName(value) } })),
-        ...name
-      },
-      {
-        name: 'Email',
-        type: 'email',
-        placeholder: 'jsmith@mail.com',
-        onChange: (value: string) =>
-          setState(fromPrevState({ email: { value, validation: validateEmail(value) } })),
-        ...email
-      },
-      {
-        name: 'Subject',
-        type: 'text',
-        placeholder: 'Subject',
-        onChange: (value: string) =>
-          setState(fromPrevState({ subject: { value, validation: validateSubject(value) } })),
-        ...subject
-      },
-      {
-        name: 'Message',
-        as: 'textarea',
-        type: 'text',
-        placeholder: 'Message',
-        onChange: (value: string) =>
-          setState(fromPrevState({ message: { value, validation: validateMessage(value) } })),
-        ...message
-      }
-    ]}>
-      <Modal show={showResultModal} enforceFocus={true} backdrop="static">
-        <Modal.Header closeButton onClick={handleResultModalDismissed} className="h3 mb-0">
-          {submissionState.isSuccess ? 'Thank you!' : 'Uh Oh!'}
-        </Modal.Header>
-        <Modal.Body as="p" className="text-center mb-0">
-          {submissionState.isSuccess ? 'Your message was submitted!' : 'Something went wrong, try again later!'}
-        </Modal.Body>
-      </Modal>
-      <Card.Body as={Form} className="d-flex flex-column gap-vertical-3">
-        <MessageUsInputGroupRow>
-          <MessageUsField index={0}/>
-          <MessageUsField index={1}/>
-        </MessageUsInputGroupRow>
-        <MessageUsInputGroupRow>
-          <MessageUsField index={2}/>
-        </MessageUsInputGroupRow>
-        <MessageUsInputGroupRow>
-          <MessageUsField index={3}/>
-        </MessageUsInputGroupRow>
-        <Button variant="dates-primary" disabled={!isValidForSubmission()} onClick={handleSubmit}>
-          Submit
-        </Button>
-      </Card.Body>
-    </NetlifyForm.Provider>
-  )
+  return <Card.Body>
+    <NetlifyForm name={form.name} fields={Object.keys(initialValues).map(key => ({
+      type: 'text',
+      name: key
+    }))}/>
+    <Modal centered show={state.showResultModal} enforceFocus backdrop="static">
+      <Modal.Header closeButton onClick={handleResultModalDismissed} className="h3 mb-0">
+        {submissionState.isSuccess ? 'Thank you!' : 'Uh Oh!'}
+      </Modal.Header>
+      <Modal.Body as="p" className="text-center mb-0">
+        {submissionState.isSuccess ? 'Your message was submitted!' : 'Something went wrong, try again later!'}
+      </Modal.Body>
+    </Modal>
+    <Formik validateOnMount initialValues={initialValues} validate={validateForm} onSubmit={handleFormSubmit}>
+      {MessageUsFormBody}
+    </Formik>
+  </Card.Body>
 }
 
-function MessageUsInputGroupRow(props: PropsWithChildren) {
-  const children = Children.toArray(props.children)
-  return (
-    <Row xs={1} md={children.length} className="gap-vertical-3 gap-vertical-md-0">
-      {children.map((value, i) =>
-        <Col key={`column-${i}`}>
-          <InputGroup hasValidation>
-            {value}
-          </InputGroup>
-        </Col>
-      )}
-    </Row>
-  )
-}
-
-function MessageUsField(props: { index: number }) {
-  const field = useNetlifyFormField<MessageUsFormField>(props.index)
-  const [{ value }, setState] = useState({ value: field.value })
-  const [ref, wasUnfocused] = useUnfocus<any>()
-
-  // side effect that will send call onChange function provided
-  //by the parent each time the value of this field is updated
-  // note that this will also re-render the validation, so it
-  //needs to be done this way!
-  useEffect(() => field.onChange(value), [value])
-
-  const isValid = !field.validation
-  const onChange = (event: any) => setState(fromPrevState(({ value: event.target.value })))
-
-  return (
-    <Form.FloatingLabel label={field.name}>
-      <Form.Control
-        ref={ref}
-        name={field.name}
-        as={field.as || 'input'}
-        type={field.type}
-        isValid={wasUnfocused && isValid}
-        isInvalid={wasUnfocused && !isValid}
-        placeholder={field.placeholder}
-        onChange={onChange}
+const MessageUsFormBody: FunctionComponent<FormikProps<MessageUsFormValues>> = (
+  {
+    handleSubmit,
+    handleChange,
+    handleBlur,
+    isValid,
+    values,
+    touched,
+    errors
+  }
+) => <Form noValidate onSubmit={handleSubmit}>
+  <Row className="mb-3">
+    <Form.Group as={Col} md={6} className="mb-3 mb-md-0">
+      <MessageUsFormField
+        label="Name"
+        type="text"
+        name="name"
+        placeholder="John Smith"
+        value={values.name}
+        handleChange={handleChange}
+        handleBlur={handleBlur}
+        touched={touched.name}
+        error={errors.name}
       />
-      <Collapse in={wasUnfocused && !isValid}>
-        <Form.Control.Feedback type="invalid">
-          {field.validation}
-        </Form.Control.Feedback>
-      </Collapse>
-    </Form.FloatingLabel>
-  )
+    </Form.Group>
+    <Form.Group as={Col} md={6}>
+      <MessageUsFormField
+        label="E-Mail"
+        type="email"
+        name="email"
+        placeholder="johnsmith@mail.com"
+        value={values.email}
+        handleChange={handleChange}
+        handleBlur={handleBlur}
+        touched={touched.email}
+        error={errors.email}
+      />
+    </Form.Group>
+  </Row>
+  <Row className="mb-3">
+    <Form.Group as={Col}>
+      <MessageUsFormField
+        label="Subject"
+        type="text"
+        name="subject"
+        placeholder="A Message"
+        value={values.subject}
+        handleChange={handleChange}
+        handleBlur={handleBlur}
+        touched={touched.subject}
+        error={errors.subject}
+      />
+    </Form.Group>
+  </Row>
+  <Row className="mb-3">
+    <Form.Group as={Col}>
+      <MessageUsFormField
+        textarea
+        label="Message"
+        type="text"
+        name="message"
+        placeholder="Hello!"
+        value={values.message}
+        handleChange={handleChange}
+        handleBlur={handleBlur}
+        touched={touched.message}
+        error={errors.message}
+      />
+    </Form.Group>
+  </Row>
+  <Row>
+    <Col className="d-flex">
+      <Button className="flex-fill" type="submit" variant="dates-primary" disabled={!isValid}>
+        Submit
+      </Button>
+    </Col>
+  </Row>
+</Form>
+
+type MessageUsFormFieldProps = {
+  label: string
+  name: string
+  textarea?: boolean
+  type: string
+  placeholder: string
+  value: string
+  handleChange: FormikProps<MessageUsFormValues>['handleChange']
+  handleBlur: FormikProps<MessageUsFormValues>['handleBlur']
+  touched?: boolean
+  error?: string
 }
+
+const MessageUsFormField = (props: MessageUsFormFieldProps) =>
+  <FloatingLabel label={props.label}>
+    <Form.Control
+      as={props.textarea ? 'textarea' : 'input'}
+      type={props.type}
+      name={props.name}
+      placeholder={props.placeholder}
+      value={props.value}
+      onChange={props.handleChange}
+      onBlur={props.handleBlur}
+      isValid={props.touched && !props.error}
+      isInvalid={props.touched && !!props.error}
+    />
+    <Collapse in={props.touched && !!props.error}>
+      <Form.Control.Feedback type="invalid">
+        {props.error}
+      </Form.Control.Feedback>
+    </Collapse>
+  </FloatingLabel>

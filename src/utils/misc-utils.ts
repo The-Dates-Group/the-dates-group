@@ -14,6 +14,33 @@
  * limitations under the License.
  */
 
+export const formatFieldName = (name: string) => {
+  const charArray = []
+  let lastWasUppercase = false
+  for(let i = 0; i < name.length; i++) {
+    const char = name[i]
+
+    // first char is always uppercase
+    if(i === 0) {
+      charArray.push(char.toUpperCase())
+      continue
+    }
+
+    // char is uppercase
+    if(char === char.toUpperCase()) {
+      if(!lastWasUppercase) {
+        charArray.push(' ')
+        lastWasUppercase = true
+      }
+      charArray.push(char)
+      continue
+    }
+    lastWasUppercase = false
+    charArray.push(char)
+  }
+  return charArray.join('')
+}
+
 /**
  * Maps a number of `T` using `mapFn` for every `i` between 0 (inclusive) and `n` (exclusive)
  *
