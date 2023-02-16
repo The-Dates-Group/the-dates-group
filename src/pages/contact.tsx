@@ -57,6 +57,8 @@ export default function ContactPage() {
       <Page.Section>
         <Card className="card-section">
           <Tab.Container
+            mountOnEnter={false}
+            defaultActiveKey="send-a-message"
             activeKey={selectedKey}
             onSelect={handleTabSelected}
             generateChildId={(eventKey, type) => `${eventKey}-${type}`}>
@@ -69,7 +71,7 @@ export default function ContactPage() {
             </Nav>
             <Tab.Content>
               {tabs.map(({ key, Component }, index) =>
-                <Tab.Pane key={`tab-pane-${index}`} active={key === selectedKey} eventKey={key} transition={false}>
+                <Tab.Pane key={`tab-pane-${index}`} eventKey={key} transition={false}>
                   <Component/>
                 </Tab.Pane>
               )}
