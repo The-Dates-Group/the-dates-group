@@ -47,16 +47,17 @@ export class FormSubmission<F extends object> {
   submit(form: F): Promise<boolean> {
     const body = { 'form-name': this.name } as Record<string, string>
     for(const key of Object.keys(form)) {
-      let value = (form as any)[key] || 'None'
-      switch(typeof value) {
-        case 'string':
-          value = value.trim()
-          break
-        case 'boolean':
-          value = value ? 'Yes' : 'No'
-          break
-        default:
-          value = String(value)
+      let value = (form as any)[key]
+      if(typeof value === 'undefined') {
+        value = 'None'
+      } else if(Array.isArray(value)) {
+        value = value.join(', ')
+      } else if(typeof value === 'object') {
+        value = value === null ? 'None' : JSON.stringify(value)
+      } else if(typeof value === 'boolean') {
+        value = value ? 'Yes' : 'No'
+      } else if(typeof value !== 'string') {
+        value = String(value)
       }
       const formattedKey = FormSubmission.formatFieldName(key)
       body[formattedKey] = value
