@@ -57,6 +57,8 @@ export default function MessageUsForm() {
   const [state, setState] = useState({ showResultModal: false })
 
   const handleFormSubmit = async (values: MessageUsFormValues) => {
+    const errors = validateForm(values)
+    if(Object.keys(errors).length > 0) throw new Error('Unexpected validation error while submitting form!')
     await form.submit(values)
     setState(fromPrevState({ showResultModal: true }))
   }
