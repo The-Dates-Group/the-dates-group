@@ -65,7 +65,11 @@ const Funding = () =>
             <Card.Text as="blockquote" className="mx-auto w-75 justify-content-center">
               "The AFP’s Code of Ethics is the only enforceable code in the sector, which every member must sign
               each year and adhere to its standards and practices."
-              <a className="quoted stretched-link" href="https://afpglobal.org/" target="_blank" rel="noreferrer">
+              <a
+                className="quoted stretched-link dates-text-dark"
+                href="https://afpglobal.org/"
+                target="_blank"
+                rel="noreferrer">
                 AFPGlobal
               </a>
             </Card.Text>

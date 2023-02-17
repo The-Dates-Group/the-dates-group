@@ -255,12 +255,12 @@ function FieldYesNo({ field, children }: FieldYesNoProps) {
   return <>
     <Form.Label>{children}</Form.Label>
     <Form.Check className="mx-1">
-      <Form.Check.Input checked={fieldValue} onChange={handleYesChanged}/>
-      <Form.Check.Label>Yes</Form.Check.Label>
+      <Form.Check.Input id={`${field}-yes`} checked={fieldValue} onChange={handleYesChanged}/>
+      <Form.Check.Label htmlFor={`${field}-yes`}>Yes</Form.Check.Label>
     </Form.Check>
     <Form.Check className="mx-1">
-      <Form.Check.Input checked={!fieldValue} onChange={handleNoChanged}/>
-      <Form.Check.Label>No</Form.Check.Label>
+      <Form.Check.Input id={`${field}-no`} checked={!fieldValue} onChange={handleNoChanged}/>
+      <Form.Check.Label htmlFor={`${field}-no`}>No</Form.Check.Label>
     </Form.Check>
   </>
 }
@@ -512,7 +512,7 @@ function FormBusinessInfo() {
       </FormGroupCol>
       <FormGroupCol lg={4}>
         <Form.Label className="px-1">What date did your business start?</Form.Label>
-        <Form.FloatingLabel label="Date Business Started">
+        <Form.FloatingLabel label="Date Business Started" controlId="date-business-started">
           <FieldControl field="dateBusinessStarted" type="date"/>
           <FieldInvalidFeedbackCollapse field="dateBusinessStarted"/>
         </Form.FloatingLabel>
@@ -618,12 +618,18 @@ function BusinessPlanFormBody() {
       <FormGroupCol>
         <Form.Label>Do you have a separate mailing address?</Form.Label>
         <Form.Check className="mx-1">
-          <Form.Check.Input checked={hasSeparateMailingAddress} onChange={handleYesChanged}/>
-          <Form.Check.Label>Yes</Form.Check.Label>
+          <Form.Check.Input
+            id="separate-mailing-address-yes"
+            checked={hasSeparateMailingAddress}
+            onChange={handleYesChanged}/>
+          <Form.Check.Label htmlFor="separate-mailing-address-yes">Yes</Form.Check.Label>
         </Form.Check>
         <Form.Check className="mx-1">
-          <Form.Check.Input checked={!hasSeparateMailingAddress} onChange={handleNoChanged}/>
-          <Form.Check.Label>No</Form.Check.Label>
+          <Form.Check.Input
+            id="separate-mailing-address-no"
+            checked={!hasSeparateMailingAddress}
+            onChange={handleNoChanged}/>
+          <Form.Check.Label htmlFor="separate-mailing-address-no">No</Form.Check.Label>
         </Form.Check>
       </FormGroupCol>
     </FormGroupRow>
