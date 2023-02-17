@@ -22,6 +22,7 @@ import {
   Collapse,
   ColProps,
   Form,
+  FormControl,
   FormControlProps,
   InputGroup,
   Modal,
@@ -34,6 +35,7 @@ import { fromPrevState } from '@/utils/component-utils'
 import { emailRegex, phoneNumberRegex } from '@/utils/regexes'
 import NetlifyForm from '@/components/NetlifyForm'
 import classNames from 'classnames'
+import { useSSRSafeId } from '@restart/ui/ssr'
 
 type BusinessStructure =
   'C Corp'
@@ -67,7 +69,7 @@ interface BusinessPlanFormValues {
   professionalLicenses: string[]
   interestedInFederalContractCertification: boolean
   appliedForCertificationsInThePast: boolean
-  partOfFranchise: boolean
+  franchiseAgreement: File | null
   organizationBonded: boolean
   holdsBusinessLicense: boolean
   streetAddress: string
@@ -80,6 +82,12 @@ interface BusinessPlanFormValues {
   mailingZip: string
 }
 
+interface YesNoControllerProps {
+  controlId?: string
+  defaultValue?: boolean
+  onChange?: (value: boolean) => void
+}
+
 interface FieldProp {
   field: keyof BusinessPlanFormValues
 }
@@ -89,7 +97,8 @@ interface FieldControlProps extends FieldProp, FormControlProps {
   overrideOnBlur?: boolean
 }
 
-interface FieldYesNoProps extends FieldProp, PropsWithChildren {
+interface FieldYesNoProps extends FieldProp {
+  label: string
 }
 
 interface FieldSelectionWithOtherProps extends PropsWithChildren, FieldProp, FieldControlProps {
@@ -231,37 +240,98 @@ function FieldControl(props: FieldControlProps) {
   />
 }
 
-function FieldYesNo({ field, children }: FieldYesNoProps) {
+function FieldFileControl(
+  props: Omit<FieldControlProps, keyof 'as' | 'type' | 'overrideOnChange' | 'overrideOnBlur'>
+) {
+  const { field, onChange, onBlur, isValid, isInvalid, ...controlProps } = props
+  const { touched, errors, ...formik } = useFormikContext<BusinessPlanFormValues>()
+
+  const handleChange: ChangeEventHandler<HTMLInputElement> = (e) => {
+    if(onChange) onChange(e)
+    const file = e.target.files?.item(0) || null
+    formik.setFieldValue(field, file, false)
+    formik.setFieldTouched(field, true, true)
+  }
+
+  const handleBlur: FocusEventHandler<HTMLInputElement> = (e) => {
+    if(onBlur) onBlur(e)
+    formik.handleBlur(e)
+  }
+
+  return <FormControl
+    {...controlProps}
+    name={field}
+    type="file"
+    onChange={handleChange}
+    onBlur={handleBlur}
+    isValid={isValid || (touched[field] && !errors[field])}
+    isInvalid={isInvalid || (touched[field] && !!errors[field])}
+  />
+}
+
+function YesNoController({ controlId, defaultValue, onChange }: YesNoControllerProps) {
+  const [value, setValue] = useState(defaultValue || false)
+  const id = useSSRSafeId(controlId)
+
+  const handleYesChanged = (event: ChangeEvent<HTMLInputElement>) => {
+    if(event.target.checked) {
+      setValue(true)
+      if(onChange) onChange(true)
+    }
+  }
+
+  const handleNoChanged = (event: ChangeEvent<HTMLInputElement>) => {
+    if(event.target.checked) {
+      setValue(false)
+      if(onChange) onChange(false)
+    }
+  }
+
+  return <>
+    <Form.Check className="mx-1">
+      <Form.Check.Input id={`${id}-yes`} checked={value} onChange={handleYesChanged}/>
+      <Form.Check.Label htmlFor={`${id}-yes`}>Yes</Form.Check.Label>
+    </Form.Check>
+    <Form.Check className="mx-1">
+      <Form.Check.Input id={`${id}-no`} checked={!value} onChange={handleNoChanged}/>
+      <Form.Check.Label htmlFor={`${id}-no`}>No</Form.Check.Label>
+    </Form.Check>
+  </>
+}
+
+function YesNoControllerWithCollapse(
+  { controlId, defaultValue, children, onChange }: PropsWithChildren<YesNoControllerProps>
+) {
+  const [expanded, setExpanded] = useState(defaultValue)
+  const handleOnChange = (value: boolean) => {
+    setExpanded(value)
+    if(onChange) onChange(true)
+  }
+  return <>
+    <YesNoController controlId={controlId} defaultValue={defaultValue} onChange={handleOnChange}/>
+    <Collapse in={expanded}>
+      <div>
+        {children}
+      </div>
+    </Collapse>
+  </>
+}
+
+function FieldYesNo({ field, label }: FieldYesNoProps) {
   const { values, touched, errors, ...formik } = useFormikContext<BusinessPlanFormValues>()
 
   const fieldValue = values[field]
   if(typeof fieldValue !== 'boolean')
     throw new Error('Field is not a boolean type!')
 
-  const handleYesChanged = (event: ChangeEvent<HTMLInputElement>) => {
-    if(event.target.checked) {
-      formik.setFieldValue(field, true, false)
-      formik.setFieldTouched(field, true, true)
-    }
-  }
-
-  const handleNoChanged = (event: ChangeEvent<HTMLInputElement>) => {
-    if(event.target.checked) {
-      formik.setFieldValue(field, false, false)
-      formik.setFieldTouched(field, true, true)
-    }
+  const handleOnChange = (value: boolean) => {
+    formik.setFieldValue(field, value, false)
+    formik.setFieldTouched(field, true, true)
   }
 
   return <>
-    <Form.Label>{children}</Form.Label>
-    <Form.Check className="mx-1">
-      <Form.Check.Input id={`${field}-yes`} checked={fieldValue} onChange={handleYesChanged}/>
-      <Form.Check.Label htmlFor={`${field}-yes`}>Yes</Form.Check.Label>
-    </Form.Check>
-    <Form.Check className="mx-1">
-      <Form.Check.Input id={`${field}-no`} checked={!fieldValue} onChange={handleNoChanged}/>
-      <Form.Check.Label htmlFor={`${field}-no`}>No</Form.Check.Label>
-    </Form.Check>
+    <Form.Label>{label}</Form.Label>
+    <YesNoController controlId={field} defaultValue={fieldValue} onChange={handleOnChange}/>
   </>
 }
 
@@ -530,38 +600,44 @@ function FormBusinessInfo() {
     </FormGroupRow>
     <FormGroupRow>
       <FormGroupCol>
-        <FieldYesNo field="interestedInFederalContractCertification">
-          If your organization is for profit, are you interested in
-          being certified for federal contracts or government grants?
-        </FieldYesNo>
+        <FieldYesNo
+          field="interestedInFederalContractCertification"
+          label="If your organization is for profit, are you interested in being certified for federal contracts or government grants?"
+        />
       </FormGroupCol>
     </FormGroupRow>
     <FormGroupRow>
       <FormGroupCol>
-        <FieldYesNo field="appliedForCertificationsInThePast">
-          Have you applied for a certification in the past?
-        </FieldYesNo>
+        <FieldYesNo
+          field="appliedForCertificationsInThePast"
+          label="Have you applied for a certification in the past?"
+        />
       </FormGroupCol>
     </FormGroupRow>
     <FormGroupRow>
       <FormGroupCol>
-        <FieldYesNo field="partOfFranchise">
-          Is your business part of a franchise?
-        </FieldYesNo>
+        <Form.Label as="p" className="mb-2">Is your business part of a franchise?</Form.Label>
+        <YesNoControllerWithCollapse controlId="part-of-franchise">
+          <Col md={6}>
+            <FieldFileControl field="franchiseAgreement"/>
+          </Col>
+        </YesNoControllerWithCollapse>
       </FormGroupCol>
     </FormGroupRow>
     <FormGroupRow>
       <FormGroupCol>
-        <FieldYesNo field="holdsBusinessLicense">
-          Does your business hold a business license?
-        </FieldYesNo>
+        <FieldYesNo
+          field="holdsBusinessLicense"
+          label="Does your business hold a business license?"
+        />
       </FormGroupCol>
     </FormGroupRow>
     <FormGroupRow>
       <FormGroupCol>
-        <FieldYesNo field="organizationBonded">
-          Is your organization bonded?
-        </FieldYesNo>
+        <FieldYesNo
+          field="organizationBonded"
+          label="Is your organization bonded?"
+        />
       </FormGroupCol>
     </FormGroupRow>
   </FormCategory>
@@ -599,7 +675,8 @@ const FormAddressInfo = (props: FormAddressInfoProps) => <FormCategory title={pr
 </FormCategory>
 
 function BusinessPlanFormBody() {
-  const { submitForm } = useFormikContext<BusinessPlanFormValues>()
+  const { submitForm, values } = useFormikContext<BusinessPlanFormValues>()
+  console.debug('Form Values', values)
   const [hasSeparateMailingAddress, setHasSeparateMailingAddress] = useState(false)
   const handleYesChanged = () => setHasSeparateMailingAddress(true)
   const handleNoChanged = () => setHasSeparateMailingAddress(false)
@@ -618,6 +695,7 @@ function BusinessPlanFormBody() {
       <FormGroupCol>
         <Form.Label>Do you have a separate mailing address?</Form.Label>
         <Form.Check className="mx-1">
+          {/* TODO Convert to YesNoController */}
           <Form.Check.Input
             id="separate-mailing-address-yes"
             checked={hasSeparateMailingAddress}
@@ -668,7 +746,7 @@ const initialValues: BusinessPlanFormValues = {
   professionalLicenses: [],
   interestedInFederalContractCertification: false,
   appliedForCertificationsInThePast: false,
-  partOfFranchise: false,
+  franchiseAgreement: null,
   organizationBonded: false,
   holdsBusinessLicense: false,
   streetAddress: '',
@@ -683,7 +761,7 @@ const initialValues: BusinessPlanFormValues = {
 
 export default function BusinessPlanForm() {
   const [state, setState] = useState({ showResultModal: false })
-  const [form, submissionState] = useFormSubmission<BusinessPlanFormValues>('Business Plan Form')
+  const [form, submissionState] = useFormSubmission<BusinessPlanFormValues>('Business Plan Form', 'multipart/form-data')
   const router = useRouter()
 
   const handleFormSubmit = async (values: BusinessPlanFormValues) => {

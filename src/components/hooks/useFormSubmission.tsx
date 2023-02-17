@@ -15,7 +15,29 @@
  */
 import useRequester, { Requester } from '@/components/hooks/useRequester'
 import { Dispatch, SetStateAction, useState } from 'react'
-import { AxiosRequestConfig } from 'axios'
+
+const convertValueForFormSubmission = (value: any, allowFiles: boolean): any => {
+  if(Array.isArray(value)) return value.map(item => convertValueForFormSubmission(item, allowFiles)).join(', ')
+  switch(typeof value) {
+    case 'undefined':
+      return 'None'
+    case 'object':
+      if(value === null) return 'None'
+      if(value instanceof File) {
+        if(!allowFiles) throw new Error('Attempted to convert file value where files are not allowed!')
+        return value
+      }
+      return JSON.stringify(value)
+    case 'string':
+      return value
+    case 'boolean':
+      return value ? 'Yes' : 'No'
+    default:
+      return String(value)
+  }
+}
+
+export type FormContentType = 'application/x-www-form-urlencoded' | 'multipart/form-data'
 
 export type FormSubmissionState = {
   readonly isComplete: boolean
@@ -23,47 +45,30 @@ export type FormSubmissionState = {
 }
 
 export class FormSubmission<F extends object> {
-  private static config: AxiosRequestConfig = {
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    }
-  }
-
   private readonly requester: Requester
   private readonly setState: Dispatch<SetStateAction<FormSubmissionState>>
+  private readonly contentType: FormContentType
 
   readonly name: string
 
   constructor(
     requester: Requester,
     setState: Dispatch<SetStateAction<FormSubmissionState>>,
-    name: string
+    name: string,
+    contentType: FormContentType
   ) {
     this.requester = requester
     this.setState = setState
     this.name = name
+    this.contentType = contentType
   }
 
   submit(form: F): Promise<boolean> {
-    const body = { 'form-name': this.name } as Record<string, string>
-    for(const key of Object.keys(form)) {
-      let value = (form as any)[key]
-      if(typeof value === 'undefined') {
-        value = 'None'
-      } else if(Array.isArray(value)) {
-        value = value.join(', ')
-      } else if(typeof value === 'object') {
-        value = value === null ? 'None' : JSON.stringify(value)
-      } else if(typeof value === 'boolean') {
-        value = value ? 'Yes' : 'No'
-      } else if(typeof value !== 'string') {
-        value = String(value)
-      }
-      const formattedKey = FormSubmission.formatFieldName(key)
-      body[formattedKey] = value
-    }
+    const body = this.contentType === 'application/x-www-form-urlencoded' ?
+      this.createFormUrlEncoded(form) :
+      this.createFormData(form)
     console.debug('Sending form:', body)
-    return this.requester.axios.post('/', body, FormSubmission.config)
+    return this.requester.axios.post('/', body, { headers: { 'Content-Type': this.contentType } })
       .then(response => {
         const isSuccess = response.status < 400
         if(!isSuccess) console.warn(`Form POST received non-success response: ${response.statusText}`)
@@ -77,6 +82,33 @@ export class FormSubmission<F extends object> {
         this.setState({ isComplete: true, isSuccess })
         return isSuccess
       })
+  }
+
+  private createFormUrlEncoded(form: F): any {
+    const body = { 'form-data': this.name } as any
+    for(const key of Object.keys(form)) {
+      const value = convertValueForFormSubmission((form as any)[key], false)
+      const formattedKey = FormSubmission.formatFieldName(key)
+      body[formattedKey] = value
+    }
+    return body
+  }
+
+  private createFormData(form: F): FormData {
+    const formData = new FormData()
+    // append form name
+    formData.append('form-name', this.name)
+    // for each key of form object
+    for(const key of Object.keys(form)) {
+      const formValue = convertValueForFormSubmission((form as any)[key], true)
+      const formKey = FormSubmission.formatFieldName(key)
+      if(formValue instanceof File) {
+        formData.append(formKey, formValue, formValue.name)
+      } else {
+        formData.append(formKey, formValue)
+      }
+    }
+    return formData
   }
 
   static formatFieldName(name: string) {
@@ -108,10 +140,11 @@ export class FormSubmission<F extends object> {
 }
 
 export default function useFormSubmission<F extends object>(
-  name: string
+  name: string,
+  contentType: FormContentType = 'application/x-www-form-urlencoded'
 ): [form: FormSubmission<F>, state: FormSubmissionState] {
   const requester = useRequester()
   const [state, setState] = useState<FormSubmissionState>({ isComplete: false, isSuccess: false })
-  const form = new FormSubmission(requester, setState, name)
+  const form = new FormSubmission(requester, setState, name, contentType)
   return [form, state]
 }
