@@ -51,8 +51,8 @@ export const services: Service[] = [
     ]
   },
   {
-    title: 'Funding',
-    href: '/services/funding',
+    title: 'Fund Developing',
+    href: '/services/fund-developing',
     icon: CashCoin,
     features: [
       'Grant Searches',

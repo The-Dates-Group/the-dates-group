@@ -82,10 +82,7 @@ const ServicesSection = () =>
         <Row xs={1} lg={2} className="align-items-center justify-content-center">
           <Col lg={9} className="text-center text-lg-start">
             <p className="mb-1">
-              Dates Group LLC uses experience and care to form, fund and protect your business.
-            </p>
-            <p className="mb-lg-0">
-              Your business is our business!
+              The Dates Group uses experience to provide comprehensive business solutions.
             </p>
           </Col>
           <Col lg={3} className="d-flex flex-column">
@@ -100,7 +97,7 @@ const ContactUsSection = () =>
   <Page.Section withFade>
     <Card className="card-section">
       <Card.Header as="h1" className="text-center">
-        Ready to get your business funded?
+        Ready to explore funding opportunities?
       </Card.Header>
       <Card.Body>
         <Row xs={1} lg={2} className="justify-content-around">

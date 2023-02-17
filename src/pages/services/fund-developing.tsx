@@ -18,7 +18,7 @@ import Page from '@/components/Page'
 import VerticallyRuled from '@/components/VerticallyRuled'
 import BusinessPlanForm from '@/components/BusinessPlanForm'
 
-const Funding = () =>
+const FundDeveloping = () =>
   <Page>
     <Page.Section>
       <Card className="card-section">
@@ -138,4 +138,4 @@ const Funding = () =>
     </Page.Section>
   </Page>
 
-export default Funding
+export default FundDeveloping
