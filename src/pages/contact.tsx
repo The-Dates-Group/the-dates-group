@@ -18,18 +18,9 @@ import { Card, Nav, Tab } from 'react-bootstrap'
 import Page from '@/components/Page'
 import MessageUsForm from '@/components/MessageUsForm'
 import ScheduleCalendar from '@/components/ScheduleCalendar'
+import { useRouter } from 'next/router'
 
 type TabKey = 'send-a-message' | 'schedule-a-call'
-
-const defaultKey = (): TabKey => {
-  switch(document.location.hash.toLowerCase()) {
-    case '#schedule-a-call':
-      return 'schedule-a-call'
-    case '#send-a-message':
-    default:
-      return 'send-a-message'
-  }
-}
 
 const tabs = [
   {
@@ -44,13 +35,23 @@ const tabs = [
   }
 ]
 
+const defaultActiveKey: TabKey = 'send-a-message'
+
 export default function ContactPage() {
+  const { asPath } = useRouter()
   const [selectedKey, setSelectedKey] = useState<TabKey>(undefined as unknown as TabKey)
   useEffect(() => {
-    if(!selectedKey) setSelectedKey(defaultKey())
-  }, [selectedKey])
+    if(typeof selectedKey === 'undefined') {
+      const pathParts = asPath.split('#', 2)
+      const activeKey = pathParts.length === 1 ?
+        defaultActiveKey : pathParts[1] === 'send-a-message' || pathParts[1] === 'schedule-a-call' ?
+          pathParts[1] : defaultActiveKey
+      setSelectedKey(activeKey)
+    }
+  }, [asPath, selectedKey])
 
-  const handleTabSelected = (key: string | null) => setSelectedKey((key as TabKey | null) || defaultKey())
+  const handleTabSelected = (key: string | null) =>
+    setSelectedKey((key as TabKey | null) || defaultActiveKey)
 
   return (
     <Page title="Contact">
@@ -58,7 +59,7 @@ export default function ContactPage() {
         <Card className="card-section">
           <Tab.Container
             mountOnEnter={false}
-            defaultActiveKey="send-a-message"
+            defaultActiveKey={defaultActiveKey}
             activeKey={selectedKey}
             onSelect={handleTabSelected}
             generateChildId={(eventKey, type) => `${eventKey}-${type}`}>
