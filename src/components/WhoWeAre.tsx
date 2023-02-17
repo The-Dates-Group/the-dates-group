@@ -22,7 +22,7 @@ import YouTubeEmbed from '@/components/YouTubeEmbed'
 
 const WhoWeAre = () =>
   <Card className="card-section">
-    <Card.Header as="h1" className="text-center">Who We Are</Card.Header>
+    <Card.Header id="who-we-are" as="h1" className="text-center">Who We Are</Card.Header>
     <Card.Body className="container-fluid gap-vertical-3">
       {/* at XL screen sizes, expand from a single column to two columns */}
       <Row xs={1} lg={2} className="align-items-center flex-column-reverse flex-lg-row">

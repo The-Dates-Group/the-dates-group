@@ -56,7 +56,7 @@ const AboutUs = () =>
     </Page.Section>
     <Page.Section>
       <Card className="card-section">
-        <Card.Header as="h1" className="text-center">
+        <Card.Header id="our-team" as="h1" className="text-center">
           Our Team
         </Card.Header>
         <Card.Body className="gap-vertical-3">
@@ -163,7 +163,7 @@ const AboutUs = () =>
     </Page.Section>
     <Page.Section>
       <Card className="card-section">
-        <Card.Header as="h1" className="text-center">
+        <Card.Header id="proud-members-of" as="h1" className="text-center">
           Proud Members Of
         </Card.Header>
         <Card.Body>

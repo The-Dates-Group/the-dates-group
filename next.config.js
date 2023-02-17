@@ -16,7 +16,14 @@
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true
+  reactStrictMode: true,
+  redirects: async () => [
+    {
+      source: '/team',
+      destination: '/about-us#our-team',
+      permanent: true
+    }
+  ]
 }
 
 module.exports = nextConfig
