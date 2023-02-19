@@ -13,29 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ChangeEvent, ChangeEventHandler, FocusEventHandler, PropsWithChildren, useRef, useState } from 'react'
+import { ChangeEvent, ComponentType, PropsWithChildren, useState } from 'react'
+import { Button, Card, Col, Collapse, ColProps, Form, Modal, Row, RowProps } from 'react-bootstrap'
 import { useRouter } from 'next/router'
-import {
-  Button,
-  Card,
-  Col,
-  Collapse,
-  ColProps,
-  Form,
-  FormControl,
-  FormControlProps,
-  InputGroup,
-  Modal,
-  Row,
-  RowProps
-} from 'react-bootstrap'
 import { Formik, useFormikContext } from 'formik'
+import classNames from 'classnames'
+
 import useFormSubmission from '@/components/hooks/useFormSubmission'
+import NetlifyForm from '@/components/NetlifyForm'
+import YesNoController, { YesNoControllerWithCollapse } from '@/components/YesNoController'
+
+import FieldControl, { FieldFileControl } from '@/components/forms/FieldControl'
+import FieldSelectionWithOther from '@/components/forms/FieldSelectionWithOther'
+import FieldYesNo from '@/components/forms/FieldYesNo'
+import FieldInvalidFeedbackCollapse from '@/components/forms/FieldInvalidFeedbackCollapse'
+import FieldExpandingList from '@/components/forms/FieldExpandingList'
+
 import { fromPrevState } from '@/utils/component-utils'
 import { emailRegex, phoneNumberRegex } from '@/utils/regexes'
-import NetlifyForm from '@/components/NetlifyForm'
-import classNames from 'classnames'
-import { useSSRSafeId } from '@restart/ui/ssr'
 
 type BusinessStructure =
   'C Corp'
@@ -81,38 +76,6 @@ interface BusinessPlanFormValues {
   mailingState: string
   mailingZip: string
 }
-
-interface YesNoControllerProps {
-  controlId?: string
-  defaultValue?: boolean
-  onChange?: (value: boolean) => void
-}
-
-interface FieldProp {
-  field: keyof BusinessPlanFormValues
-}
-
-interface FieldControlProps extends FieldProp, FormControlProps {
-  overrideOnChange?: boolean
-  overrideOnBlur?: boolean
-}
-
-interface FieldYesNoProps extends FieldProp {
-  label: string
-}
-
-interface FieldSelectionWithOtherProps extends PropsWithChildren, FieldProp, FieldControlProps {
-  default: string
-  options: string[]
-}
-
-interface FieldExpandingListProps extends FieldProp {
-  addButtonLabel?: string
-  removeButtonLabel?: string
-  placeholder: string
-}
-
-type FieldInvalidFeedbackCollapseProps = FieldProp
 
 type FormCategoryProps = PropsWithChildren & { title: string }
 
@@ -213,243 +176,6 @@ function validateForm(values: BusinessPlanFormValues) {
   return errors
 }
 
-function FieldControl(props: FieldControlProps) {
-  const { field, overrideOnChange, overrideOnBlur, onChange, onBlur, isValid, isInvalid, ...controlProps } = props
-  const { values, touched, errors, ...formik } = useFormikContext<BusinessPlanFormValues>()
-
-  const handleChange: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> | undefined =
-    overrideOnChange ? onChange : (e) => {
-      if(onChange) onChange(e)
-      formik.handleChange(e)
-    }
-
-  const handleBlur: FocusEventHandler<HTMLInputElement | HTMLTextAreaElement> | undefined =
-    overrideOnBlur ? onBlur : (e) => {
-      if(onBlur) onBlur(e)
-      formik.handleBlur(e)
-    }
-
-  return <Form.Control
-    {...controlProps}
-    name={field}
-    value={String(values[field])}
-    onChange={handleChange}
-    onBlur={handleBlur}
-    isValid={isValid || (touched[field] && !errors[field])}
-    isInvalid={isInvalid || (touched[field] && !!errors[field])}
-  />
-}
-
-function FieldFileControl(
-  props: Omit<FieldControlProps, keyof 'as' | 'type' | 'overrideOnChange' | 'overrideOnBlur'>
-) {
-  const { field, onChange, onBlur, isValid, isInvalid, ...controlProps } = props
-  const { touched, errors, ...formik } = useFormikContext<BusinessPlanFormValues>()
-
-  const handleChange: ChangeEventHandler<HTMLInputElement> = (e) => {
-    if(onChange) onChange(e)
-    const file = e.target.files?.item(0) || null
-    formik.setFieldValue(field, file, false)
-    formik.setFieldTouched(field, true, true)
-  }
-
-  const handleBlur: FocusEventHandler<HTMLInputElement> = (e) => {
-    if(onBlur) onBlur(e)
-    formik.handleBlur(e)
-  }
-
-  return <FormControl
-    {...controlProps}
-    name={field}
-    type="file"
-    onChange={handleChange}
-    onBlur={handleBlur}
-    isValid={isValid || (touched[field] && !errors[field])}
-    isInvalid={isInvalid || (touched[field] && !!errors[field])}
-  />
-}
-
-function YesNoController({ controlId, defaultValue, onChange }: YesNoControllerProps) {
-  const [value, setValue] = useState(defaultValue || false)
-  const id = useSSRSafeId(controlId)
-
-  const handleYesChanged = (event: ChangeEvent<HTMLInputElement>) => {
-    if(event.target.checked) {
-      setValue(true)
-      if(onChange) onChange(true)
-    }
-  }
-
-  const handleNoChanged = (event: ChangeEvent<HTMLInputElement>) => {
-    if(event.target.checked) {
-      setValue(false)
-      if(onChange) onChange(false)
-    }
-  }
-
-  return <>
-    <Form.Check className="mx-1">
-      <Form.Check.Input id={`${id}-yes`} checked={value} onChange={handleYesChanged}/>
-      <Form.Check.Label htmlFor={`${id}-yes`}>Yes</Form.Check.Label>
-    </Form.Check>
-    <Form.Check className="mx-1">
-      <Form.Check.Input id={`${id}-no`} checked={!value} onChange={handleNoChanged}/>
-      <Form.Check.Label htmlFor={`${id}-no`}>No</Form.Check.Label>
-    </Form.Check>
-  </>
-}
-
-function YesNoControllerWithCollapse(
-  { controlId, defaultValue, children, onChange }: PropsWithChildren<YesNoControllerProps>
-) {
-  const [expanded, setExpanded] = useState(defaultValue)
-  const handleOnChange = (value: boolean) => {
-    setExpanded(value)
-    if(onChange) onChange(true)
-  }
-  return <>
-    <YesNoController controlId={controlId} defaultValue={defaultValue} onChange={handleOnChange}/>
-    <Collapse in={expanded}>
-      <div>
-        {children}
-      </div>
-    </Collapse>
-  </>
-}
-
-function FieldYesNo({ field, label }: FieldYesNoProps) {
-  const { values, touched, errors, ...formik } = useFormikContext<BusinessPlanFormValues>()
-
-  const fieldValue = values[field]
-  if(typeof fieldValue !== 'boolean')
-    throw new Error('Field is not a boolean type!')
-
-  const handleOnChange = (value: boolean) => {
-    formik.setFieldValue(field, value, false)
-    formik.setFieldTouched(field, true, true)
-  }
-
-  return <>
-    <Form.Label>{label}</Form.Label>
-    <YesNoController controlId={field} defaultValue={fieldValue} onChange={handleOnChange}/>
-  </>
-}
-
-function FieldSelectionWithOther(props: FieldSelectionWithOtherProps) {
-  const { default: defaultOption, options, field, ...controlProps } = props
-  const { values, touched, errors, ...formik } = useFormikContext<BusinessPlanFormValues>()
-  const [otherSelected, setOtherSelected] = useState(false)
-  const otherRef = useRef<HTMLOptionElement>(undefined as unknown as HTMLOptionElement)
-
-  const handleOtherCollapseEntering = () => {
-    formik.setFieldTouched(field, true)
-    formik.setFieldValue(field, '', false)
-  }
-
-  const handleOtherCollapseExiting = () => {
-    if(otherSelected) setOtherSelected(false)
-  }
-
-  const handleSelectChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    const { selectedIndex, options } = event.currentTarget
-    setOtherSelected(otherRef.current === options.item(selectedIndex))
-    formik.handleChange(event)
-  }
-
-  const value = String(values[field])
-
-  return <>
-    <Form.Select
-      name={field}
-      className={otherSelected ? 'rounded-0 rounded-top' : undefined}
-      onChange={handleSelectChange}
-      onBlur={formik.handleBlur}
-      isValid={options.includes(value) || (touched[field] && !errors[field])}
-      isInvalid={touched[field] && !!errors[field]}
-      value={value.length === 0 ? undefined : !options.includes(value) ? 'Other' : value}
-    >
-      <option hidden>{defaultOption}</option>
-      {options.map(value =>
-        <option key={value} value={value}>{value}</option>
-      )}
-      <option ref={otherRef}>Other</option>
-    </Form.Select>
-    <Collapse
-      // open "Other" collapse if other field selected
-      in={otherSelected && !options.includes(value)}
-      onEntering={handleOtherCollapseEntering}
-      onExiting={handleOtherCollapseExiting}>
-      <div>
-        <FieldControl field={field} className="rounded-0 rounded-bottom" {...controlProps}/>
-      </div>
-    </Collapse>
-  </>
-}
-
-function FieldExpandingList(props: FieldExpandingListProps) {
-  const { field, addButtonLabel, removeButtonLabel, placeholder } = props
-  const { values, touched, errors, ...formik } = useFormikContext<BusinessPlanFormValues>()
-  const currentField = values[field]
-  if(!Array.isArray(currentField)) {
-    throw new Error('Field was not an array!')
-  }
-
-  const handleIndexChange = (index: number) => (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const currentField = values[field] as Array<string>
-    currentField[index] = event.target.value
-    formik.setFieldValue(field, currentField, false)
-    formik.setFieldTouched(field, true, true)
-  }
-
-  const handleAddButtonClick = () => {
-    const currentField = values[field] as Array<string>
-    currentField.push('')
-    formik.setFieldValue(field, currentField, false)
-    formik.setFieldTouched(field, true, true)
-  }
-
-  const handleRemoveButtonClick = (index: number) => () => {
-    const currentField = values[field] as Array<string>
-    const filtered = currentField.filter((_, i) => i !== index)
-    formik.setFieldValue(field, filtered, false)
-    formik.setFieldTouched(field, true, true)
-  }
-
-  return <>
-    {currentField.map((value, index) => (
-      <InputGroup hasValidation className="mb-1" key={`${field}-item-index-${index}`}>
-        <Button variant="dates-primary" onClick={handleRemoveButtonClick(index)}>
-          {removeButtonLabel || 'Remove'}
-        </Button>
-        <Form.Control
-          name={field}
-          value={value}
-          placeholder={placeholder}
-          onChange={handleIndexChange(index)}
-          onBlur={formik.handleBlur}
-          isValid={value.length > 0}
-          isInvalid={value.length === 0} // this is a hack to actually provide input validation on empty
-        />
-        <FieldInvalidFeedbackCollapse field={field}/>
-      </InputGroup>
-    ))}
-    <Button variant="dates-primary" className="mt-2" onClick={handleAddButtonClick}>
-      {addButtonLabel || 'Add'}
-    </Button>
-  </>
-}
-
-function FieldInvalidFeedbackCollapse({ field }: FieldInvalidFeedbackCollapseProps) {
-  const { touched, errors } = useFormikContext<BusinessPlanFormValues>()
-  return (
-    <Collapse in={touched[field] && !!errors[field]}>
-      <Form.Control.Feedback type="invalid">
-        {errors[field]}
-      </Form.Control.Feedback>
-    </Collapse>
-  )
-}
-
 const FormCategory = ({ title, children }: FormCategoryProps) =>
   <>
     <Card.Subtitle as="h2" className="text-center mb-3">
@@ -461,187 +187,10 @@ const FormCategory = ({ title, children }: FormCategoryProps) =>
 const FormGroupRow = ({ className, ...props }: RowProps) =>
   <Row {...props} className={classNames('mb-3', props.className)}/>
 
-const FormGroupCol = (props: ColProps) =>
-  <Form.Group as={Col} {...props}/>
-
-function FormPersonalInfo() {
-  const { setFieldValue, values } = useFormikContext<BusinessPlanFormValues>()
-  const handlePhoneNumberChange = (event: ChangeEvent<HTMLInputElement>) => {
-    event.preventDefault()
-    setFieldValue(event.target.name, formatPhoneNumber(event.target.value))
-  }
-
-  return <FormCategory title="Personal Information">
-    <FormGroupRow>
-      <FormGroupCol md={6} className="mb-3 mb-md-0">
-        <Form.FloatingLabel label="First Name">
-          <FieldControl field="firstName" type="text" placeholder="John"/>
-          <FieldInvalidFeedbackCollapse field="firstName"/>
-        </Form.FloatingLabel>
-      </FormGroupCol>
-      <FormGroupCol md={6}>
-        <Form.FloatingLabel label="Last Name">
-          <FieldControl field="lastName" type="text" placeholder="Smith"/>
-          <FieldInvalidFeedbackCollapse field="lastName"/>
-        </Form.FloatingLabel>
-      </FormGroupCol>
-    </FormGroupRow>
-    <FormGroupRow>
-      <FormGroupCol sm={6} lg={3} className="mb-3 mb-lg-0">
-        <Form.FloatingLabel label="Title">
-          <FieldControl field="title" type="text" placeholder="CEO"/>
-          <FieldInvalidFeedbackCollapse field="title"/>
-        </Form.FloatingLabel>
-      </FormGroupCol>
-      <FormGroupCol sm={6} lg={3} className="mb-3 mb-lg-0">
-        <Form.FloatingLabel label="Phone Number">
-          <FieldControl
-            field="phoneNumber"
-            type="tel"
-            placeholder="(XXX) XXX-XXXX"
-            autoCorrect="phone"
-            overrideOnChange onChange={handlePhoneNumberChange}
-            isValid={phoneNumberRegex.test(values.phoneNumber)}
-          />
-          <FieldInvalidFeedbackCollapse field="phoneNumber"/>
-        </Form.FloatingLabel>
-      </FormGroupCol>
-      <FormGroupCol lg={6}>
-        <Form.FloatingLabel label="E-Mail">
-          <FieldControl
-            field="email"
-            type="email"
-            placeholder="johnsmith@mail.com"
-            isValid={emailRegex.test(values.email)}
-          />
-          <FieldInvalidFeedbackCollapse field="email"/>
-        </Form.FloatingLabel>
-      </FormGroupCol>
-    </FormGroupRow>
-  </FormCategory>
-}
-
-function FormBusinessInfo() {
-  const { setFieldValue, values } = useFormikContext<BusinessPlanFormValues>()
-  const handlePhoneNumberChange = (event: ChangeEvent<HTMLInputElement>) => {
-    event.preventDefault()
-    setFieldValue(event.target.name, formatPhoneNumber(event.target.value))
-  }
-
-  return <FormCategory title="Business Information">
-    <FormGroupRow>
-      <FormGroupCol md={6} className="mb-3 mb-md-0">
-        <Form.FloatingLabel label="Business Name">
-          <FieldControl field="businessName" type="text" placeholder="Business Name"/>
-          <FieldInvalidFeedbackCollapse field="businessName"/>
-        </Form.FloatingLabel>
-      </FormGroupCol>
-      <FormGroupCol md={6}>
-        <Form.FloatingLabel label="Business Phone Number">
-          <FieldControl
-            field="businessPhoneNumber"
-            type="tel"
-            placeholder="(XXX) XXX-XXXX"
-            overrideOnChange onChange={handlePhoneNumberChange}
-            isValid={phoneNumberRegex.test(values.businessPhoneNumber)}
-          />
-          <FieldInvalidFeedbackCollapse field="businessPhoneNumber"/>
-        </Form.FloatingLabel>
-      </FormGroupCol>
-    </FormGroupRow>
-    <FormGroupRow>
-      <FormGroupCol md={6} lg={4} className="mb-3 mb-lg-0">
-        <Form.Label className="px-1">What is the structure of your business?</Form.Label>
-        <Form.FloatingLabel label="Business Structure">
-          <FieldSelectionWithOther
-            type="text"
-            default="Select a Business Structure"
-            field="businessStructure"
-            options={['C Corp', 'S Corp', 'LLC', 'LLP', 'General Partnership', 'Sole Proprietor', 'Nonprofit']}
-          />
-          <FieldInvalidFeedbackCollapse field="businessStructure"/>
-        </Form.FloatingLabel>
-      </FormGroupCol>
-      <FormGroupCol md={6} lg={4} className="mb-3 mb-lg-0">
-        <Form.Label className="px-1">What stage is business operating at?</Form.Label>
-        <Form.FloatingLabel label="Business Stage">
-          <FieldSelectionWithOther
-            type="text"
-            default="Select a Business Stage"
-            field="businessStage"
-            options={[
-              'Seed and Development',
-              'Startup',
-              'Growth and Establishment',
-              'Expansion',
-              'Maturity/Possibly in Need of Revamping'
-            ]}
-          />
-          <FieldInvalidFeedbackCollapse field="businessStage"/>
-        </Form.FloatingLabel>
-      </FormGroupCol>
-      <FormGroupCol lg={4}>
-        <Form.Label className="px-1">What date did your business start?</Form.Label>
-        <Form.FloatingLabel label="Date Business Started" controlId="date-business-started">
-          <FieldControl field="dateBusinessStarted" type="date"/>
-          <FieldInvalidFeedbackCollapse field="dateBusinessStarted"/>
-        </Form.FloatingLabel>
-      </FormGroupCol>
-    </FormGroupRow>
-    <FormGroupRow>
-      <FormGroupCol lg={10}>
-        <Form.Label className="px-1">What professional licenses does your business have?</Form.Label>
-        <FieldExpandingList
-          placeholder="Professional License"
-          field="professionalLicenses"
-          addButtonLabel="Add License"
-        />
-      </FormGroupCol>
-    </FormGroupRow>
-    <FormGroupRow>
-      <FormGroupCol>
-        <FieldYesNo
-          field="interestedInFederalContractCertification"
-          label="If your organization is for profit, are you interested in being certified for federal contracts or government grants?"
-        />
-      </FormGroupCol>
-    </FormGroupRow>
-    <FormGroupRow>
-      <FormGroupCol>
-        <FieldYesNo
-          field="appliedForCertificationsInThePast"
-          label="Have you applied for a certification in the past?"
-        />
-      </FormGroupCol>
-    </FormGroupRow>
-    <FormGroupRow>
-      <FormGroupCol>
-        <Form.Label as="p" className="mb-2">Is your business part of a franchise?</Form.Label>
-        <YesNoControllerWithCollapse controlId="part-of-franchise">
-          <Col md={6}>
-            <FieldFileControl field="franchiseAgreement"/>
-          </Col>
-        </YesNoControllerWithCollapse>
-      </FormGroupCol>
-    </FormGroupRow>
-    <FormGroupRow>
-      <FormGroupCol>
-        <FieldYesNo
-          field="holdsBusinessLicense"
-          label="Does your business hold a business license?"
-        />
-      </FormGroupCol>
-    </FormGroupRow>
-    <FormGroupRow>
-      <FormGroupCol>
-        <FieldYesNo
-          field="organizationBonded"
-          label="Is your organization bonded?"
-        />
-      </FormGroupCol>
-    </FormGroupRow>
-  </FormCategory>
-}
+const FormGroupCol = ({ children, component: Component, ...props }: ColProps & { component?: ComponentType<any> }) =>
+  <Form.Group as={Col} {...props}>
+    {children || (Component ? <Component/> : null)}
+  </Form.Group>
 
 const FormAddressInfo = (props: FormAddressInfoProps) => <FormCategory title={props.title}>
   <FormGroupRow>
@@ -674,15 +223,207 @@ const FormAddressInfo = (props: FormAddressInfoProps) => <FormCategory title={pr
   </FormGroupRow>
 </FormCategory>
 
+const FirstNameField = () =>
+  <Form.FloatingLabel label="First Name">
+    <FieldControl<BusinessPlanFormValues> field="firstName" type="text" placeholder="John"/>
+    <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="firstName"/>
+  </Form.FloatingLabel>
+
+const LastNameField = () =>
+  <Form.FloatingLabel label="Last Name">
+    <FieldControl<BusinessPlanFormValues> field="lastName" type="text" placeholder="Smith"/>
+    <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="lastName"/>
+  </Form.FloatingLabel>
+
+const TitleField = () =>
+  <Form.FloatingLabel label="Title">
+    <FieldControl<BusinessPlanFormValues> field="title" type="text" placeholder="CEO"/>
+    <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="title"/>
+  </Form.FloatingLabel>
+
+const BusinessNameField = () =>
+  <Form.FloatingLabel label="Business Name">
+    <FieldControl<BusinessPlanFormValues> field="businessName" type="text" placeholder="Business Name"/>
+    <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="businessName"/>
+  </Form.FloatingLabel>
+
+const BusinessStructureField = () => <>
+  <Form.Label className="px-1">What is the structure of your business?</Form.Label>
+  <Form.FloatingLabel label="Business Structure">
+    <FieldSelectionWithOther<BusinessPlanFormValues>
+      type="text"
+      default="Select a Business Structure"
+      field="businessStructure"
+      options={['C Corp', 'S Corp', 'LLC', 'LLP', 'General Partnership', 'Sole Proprietor', 'Nonprofit']}
+    />
+    <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="businessStructure"/>
+  </Form.FloatingLabel>
+</>
+
+const BusinessStageField = () => <>
+  <Form.Label className="px-1">What stage is business operating at?</Form.Label>
+  <Form.FloatingLabel label="Business Stage">
+    <FieldSelectionWithOther<BusinessPlanFormValues>
+      type="text"
+      default="Select a Business Stage"
+      field="businessStage"
+      options={[
+        'Seed and Development',
+        'Startup',
+        'Growth and Establishment',
+        'Expansion',
+        'Maturity/Possibly in Need of Revamping'
+      ]}
+    />
+    <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="businessStage"/>
+  </Form.FloatingLabel>
+</>
+
+const DateBusinessStartedField = () => <>
+  <Form.Label className="px-1">What date did your business start?</Form.Label>
+  <Form.FloatingLabel label="Date Business Started" controlId="date-business-started">
+    <FieldControl<BusinessPlanFormValues> field="dateBusinessStarted" type="date"/>
+    <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="dateBusinessStarted"/>
+  </Form.FloatingLabel>
+</>
+
+const FranchiseAgreementField = () => {
+  const { getFieldHelpers } = useFormikContext<BusinessPlanFormValues>()
+  const { setValue, setTouched } = getFieldHelpers<File | null>('franchiseAgreement')
+
+  const handleClearFranchiseAgreement = (value: boolean) => {
+    if(!value) {
+      setValue(null, false)
+      setTouched(true, true)
+    }
+  }
+
+  return <>
+    <Form.Label as="p" className="mb-2">Is your business part of a franchise?</Form.Label>
+    <YesNoControllerWithCollapse idPrefix="part-of-franchise" onChange={handleClearFranchiseAgreement}>
+      <Form.Label className="mt-2">Please provide your franchise agreement documents</Form.Label>
+      <Col md={9}>
+        <FieldFileControl<BusinessPlanFormValues> field="franchiseAgreement"/>
+      </Col>
+    </YesNoControllerWithCollapse>
+  </>
+}
+
 function BusinessPlanFormBody() {
-  const { submitForm, values } = useFormikContext<BusinessPlanFormValues>()
-  console.debug('Form Values', values)
+  const { submitForm, values, setFieldValue } = useFormikContext<BusinessPlanFormValues>()
   const [hasSeparateMailingAddress, setHasSeparateMailingAddress] = useState(false)
-  const handleYesChanged = () => setHasSeparateMailingAddress(true)
-  const handleNoChanged = () => setHasSeparateMailingAddress(false)
+
+  const handleSeparateMailingAddressChanged = (value: boolean) => setHasSeparateMailingAddress(value)
+
+  const handlePhoneNumberChange = (event: ChangeEvent<HTMLInputElement>) => {
+    event.preventDefault()
+    setFieldValue(event.target.name, formatPhoneNumber(event.target.value))
+  }
+
   return <Form noValidate>
-    <FormPersonalInfo/>
-    <FormBusinessInfo/>
+    <FormCategory title="Personal Information">
+      <FormGroupRow>
+        <FormGroupCol md={6} className="mb-3 mb-md-0" component={FirstNameField}/>
+        <FormGroupCol md={6} component={LastNameField}/>
+      </FormGroupRow>
+      <FormGroupRow>
+        <FormGroupCol sm={6} lg={3} className="mb-3 mb-lg-0" component={TitleField}/>
+        <FormGroupCol sm={6} lg={3} className="mb-3 mb-lg-0">
+          <Form.FloatingLabel label="Phone Number">
+            <FieldControl<BusinessPlanFormValues>
+              field="phoneNumber"
+              type="tel"
+              placeholder="(XXX) XXX-XXXX"
+              autoCorrect="phone"
+              overrideOnChange onChange={handlePhoneNumberChange}
+              isValid={phoneNumberRegex.test(values.phoneNumber)}
+            />
+            <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="phoneNumber"/>
+          </Form.FloatingLabel>
+        </FormGroupCol>
+        <FormGroupCol lg={6}>
+          <Form.FloatingLabel label="E-Mail">
+            <FieldControl<BusinessPlanFormValues>
+              field="email"
+              type="email"
+              placeholder="johnsmith@mail.com"
+              isValid={emailRegex.test(values.email)}
+            />
+            <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="email"/>
+          </Form.FloatingLabel>
+        </FormGroupCol>
+      </FormGroupRow>
+    </FormCategory>
+    <FormCategory title="Business Information">
+      <FormGroupRow>
+        <FormGroupCol md={6} className="mb-3 mb-md-0" component={BusinessNameField}/>
+        <FormGroupCol md={6}>
+          <Form.FloatingLabel label="Business Phone Number">
+            <FieldControl<BusinessPlanFormValues>
+              field="businessPhoneNumber"
+              type="tel"
+              placeholder="(XXX) XXX-XXXX"
+              overrideOnChange onChange={handlePhoneNumberChange}
+              isValid={phoneNumberRegex.test(values.businessPhoneNumber)}
+            />
+            <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="businessPhoneNumber"/>
+          </Form.FloatingLabel>
+        </FormGroupCol>
+      </FormGroupRow>
+      <FormGroupRow>
+        <FormGroupCol md={6} lg={4} className="mb-3 mb-lg-0" component={BusinessStructureField}/>
+        <FormGroupCol md={6} lg={4} className="mb-3 mb-lg-0" component={BusinessStageField}/>
+        <FormGroupCol lg={4} component={DateBusinessStartedField}/>
+      </FormGroupRow>
+      <FormGroupRow>
+        <FormGroupCol lg={10}>
+          <Form.Label className="px-1">What professional licenses does your business have?</Form.Label>
+          <FieldExpandingList<BusinessPlanFormValues>
+            withInvalidFeedback
+            placeholder="Professional License"
+            field="professionalLicenses"
+            addButtonLabel="Add License"
+          />
+        </FormGroupCol>
+      </FormGroupRow>
+      <FormGroupRow>
+        <FormGroupCol>
+          <FieldYesNo<BusinessPlanFormValues>
+            field="interestedInFederalContractCertification"
+            label="If your organization is for profit, are you interested in being certified for federal contracts or government grants?"
+          />
+        </FormGroupCol>
+      </FormGroupRow>
+      <FormGroupRow>
+        <FormGroupCol>
+          <FieldYesNo<BusinessPlanFormValues>
+            field="appliedForCertificationsInThePast"
+            label="Have you applied for a certification in the past?"
+          />
+        </FormGroupCol>
+      </FormGroupRow>
+      <FormGroupRow>
+        <FormGroupCol>
+          <FranchiseAgreementField/>
+        </FormGroupCol>
+      </FormGroupRow>
+      <FormGroupRow>
+        <FormGroupCol>
+          <FieldYesNo<BusinessPlanFormValues>
+            field="holdsBusinessLicense"
+            label="Does your business hold a business license?"
+          />
+        </FormGroupCol>
+      </FormGroupRow>
+      <FormGroupRow>
+        <FormGroupCol>
+          <FieldYesNo<BusinessPlanFormValues>
+            field="organizationBonded"
+            label="Is your organization bonded?"
+          />
+        </FormGroupCol>
+      </FormGroupRow>
+    </FormCategory>
     <FormAddressInfo
       title="Address Information"
       withValidation
@@ -694,21 +435,7 @@ function BusinessPlanFormBody() {
     <FormGroupRow>
       <FormGroupCol>
         <Form.Label>Do you have a separate mailing address?</Form.Label>
-        <Form.Check className="mx-1">
-          {/* TODO Convert to YesNoController */}
-          <Form.Check.Input
-            id="separate-mailing-address-yes"
-            checked={hasSeparateMailingAddress}
-            onChange={handleYesChanged}/>
-          <Form.Check.Label htmlFor="separate-mailing-address-yes">Yes</Form.Check.Label>
-        </Form.Check>
-        <Form.Check className="mx-1">
-          <Form.Check.Input
-            id="separate-mailing-address-no"
-            checked={!hasSeparateMailingAddress}
-            onChange={handleNoChanged}/>
-          <Form.Check.Label htmlFor="separate-mailing-address-no">No</Form.Check.Label>
-        </Form.Check>
+        <YesNoController idPrefix="separate-mailing-address" onChange={handleSeparateMailingAddressChanged}/>
       </FormGroupCol>
     </FormGroupRow>
     <Collapse in={hasSeparateMailingAddress}>
@@ -782,7 +509,7 @@ export default function BusinessPlanForm() {
 
   return <Card.Body>
     <NetlifyForm name={form.name} fields={Object.keys(initialValues).map(key => ({
-      type: 'text', // TODO
+      type: key === 'franchiseAgreement' ? 'file' : 'text', // TODO
       name: key
     }))}/>
     <Modal centered show={state.showResultModal} enforceFocus backdrop="static">
@@ -802,44 +529,3 @@ export default function BusinessPlanForm() {
     />
   </Card.Body>
 }
-
-// interface FieldCheckboxProps extends FieldProp, PropsWithChildren {
-// }
-
-// function FieldCheckbox({ field, children }: FieldCheckboxProps) {
-//   const { values, touched, errors, ...formik } = useFormikContext<BusinessPlanFormValues>()
-//
-//   const fieldValue = values[field]
-//   if(typeof fieldValue !== 'boolean')
-//     throw new Error('Field is not a boolean type!')
-//
-//   return <InputGroup className="w-100 flex-nowrap">
-//     <InputGroup.Checkbox
-//       type="checkbox"
-//       className="my-auto"
-//       name={field}
-//       checked={Boolean(values[field])}
-//       isValid={fieldValue}
-//       onChange={formik.handleChange}
-//       onBlur={formik.handleBlur}/>
-//     <InputGroup.Text className="text-wrap">
-//       {children}
-//     </InputGroup.Text>
-//   </InputGroup>
-// }
-
-// type FieldValidFeedbackCollapseProps = FieldProp & { message: string }
-
-// function FieldValidFeedbackCollapse({ field, message }: FieldValidFeedbackCollapseProps) {
-//   const { touched, values } = useFormikContext<BusinessPlanFormValues>()
-//   const value = values[field]
-//   const shouldShow = touched[field] && typeof value === 'string' ? value.length > 0 :
-//     typeof value === 'boolean' ? value : Array.isArray(value)
-//   return (
-//     <Collapse in={shouldShow}>
-//       <Form.Control.Feedback type="valid">
-//         {message}
-//       </Form.Control.Feedback>
-//     </Collapse>
-//   )
-// }

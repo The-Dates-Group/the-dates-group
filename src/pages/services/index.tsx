@@ -71,13 +71,13 @@ export const services: Service[] = [
     ]
   },
   {
-    title: 'Specialization',
+    title: 'Specializing',
     href: '/services/specialization',
     icon: Award,
     features: [
       'Janitorial Services Program',
       'Authors and Artists',
-      'Growth Strategy Consultation',
+      'Consultant Growth Strategy Plan',
       'Church Growth Program',
       'Fitness Influencer Program'
     ]
