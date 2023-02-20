@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ChangeEvent, ComponentType, PropsWithChildren, useState } from 'react'
-import { Button, Card, Col, Collapse, ColProps, Form, Modal, Row, RowProps } from 'react-bootstrap'
+import { PropsWithChildren, useState } from 'react'
+import { Button, Card, Col, Collapse, Form, Modal, Row } from 'react-bootstrap'
 import { useRouter } from 'next/router'
 import { Formik, useFormikContext } from 'formik'
-import classNames from 'classnames'
+import { array, boolean, object, string } from 'yup'
 
 import useFormSubmission from '@/components/hooks/useFormSubmission'
-import NetlifyForm from '@/components/NetlifyForm'
+import { NetlifySchemaForm } from '@/components/NetlifyForm'
 import YesNoController, { YesNoControllerWithCollapse } from '@/components/YesNoController'
 
 import FieldControl, { FieldFileControl } from '@/components/forms/FieldControl'
@@ -30,7 +30,18 @@ import FieldInvalidFeedbackCollapse from '@/components/forms/FieldInvalidFeedbac
 import FieldExpandingList from '@/components/forms/FieldExpandingList'
 
 import { fromPrevState } from '@/utils/component-utils'
+import { FormGroupCol, FormGroupRow } from '@/components/forms/helpers'
 import { emailRegex, phoneNumberRegex } from '@/utils/regexes'
+import { file } from '@/utils/schema-utils'
+
+const formatPhoneNumber = (value: string) => {
+  if(!value) return value
+  const phoneNumber = value.replace(/\D/g, '')
+  const phoneNumberLength = phoneNumber.length
+  if(phoneNumberLength < 4) return phoneNumber
+  if(phoneNumberLength < 7) return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`
+  return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`
+}
 
 type BusinessStructure =
   'C Corp'
@@ -50,130 +61,120 @@ type BusinessStage =
   | 'Maturity/Possibly in Need of Revamping'
   | string
 
-interface BusinessPlanFormValues {
-  firstName: string
-  lastName: string
+const formSchema = object({
+  firstName: string()
+    .default<string>('')
+    .required('Please enter your first name'),
+
+  lastName: string().default<string>('').required('Please enter your last name'),
+
+  title: string().default<string>('').required('Please enter your title'),
+
+  phoneNumber: string()
+    .default<string>('')
+    .transform(formatPhoneNumber)
+    .required('Please enter your phone number')
+    .test({
+      name: 'matches',
+      message: 'Please enter a valid phone number',
+      test: (value: string) => value.length > 0 ? phoneNumberRegex.test(value) : true
+    })
+    .meta({ formType: 'tel' }),
+
+  email: string()
+    .email('Please enter a valid email')
+    .default<string>('')
+    .required('Please enter your email')
+    .meta({ formType: 'email' }),
+
+  businessName: string().default<string>('').required('Please enter your business name'),
+
+  businessPhoneNumber: string()
+    .default<string>('')
+    .transform(formatPhoneNumber)
+    .required('Please enter your business phone number')
+    .test({
+      name: 'matches',
+      message: 'Please enter a valid phone number',
+      test: (value: string) => value.length > 0 ? phoneNumberRegex.test(value) : true
+    })
+    .meta({ formType: 'tel' }),
+
+  businessStructure: string<BusinessStructure | string>()
+    .default<string>('')
+    .required('Please specify your business structure'),
+
+  businessStage: string<BusinessStage | string>()
+    .default<string>('')
+    .required('Please specify your business structure'),
+
+  dateBusinessStarted: string()
+    .default<string>('')
+    .required('Please specify when your business started! If you are unsure of the exact date, an estimate is fine.')
+    .meta({ formType: 'date' }),
+
+  professionalLicenses: array(string().default<string>(''))
+    .default<string[]>([])
+    .test({
+      name: 'check-items',
+      message: 'Please provide a license for each field',
+      test: (value: string[]) => typeof value.find(item => item.length === 0) === 'undefined'
+    }),
+
+  interestedInFederalContractCertification: boolean().default<boolean>(false).required(),
+  appliedForCertificationsInThePast: boolean().default<boolean>(false).required(),
+
+  hasFranchiseAgreement: boolean().default<boolean>(false).required(),
+  franchiseAgreement: file()
+    .meta({ formType: 'file' })
+    .when(['hasFranchiseAgreement'], (values, schema, { parent }) =>
+      parent && parent.hasFranchiseAgreement ?
+        schema.nonNullable().required('Please upload your franchise agreement documentation') :
+        schema.nullable().default<File | null>(null)
+    ),
+
+  organizationBonded: boolean().default<boolean>(false).required(),
+  proofOfBondingCapacity: file()
+    .meta({ formType: 'file' })
+    .when(['organizationBonded'], (values, schema, { parent }) =>
+      parent && parent.organizationBonded ?
+        schema.nonNullable().required('Please upload your proof of bonding capacity') :
+        schema.nullable().default<File | null>(null)
+    ),
+
+  hasBusinessLicense: boolean().default<boolean>(false).required(),
+  businessLicense: file()
+    .meta({ formType: 'file' })
+    .when(['hasBusinessLicense'], (values, schema, { parent }) =>
+      parent && parent.organizationBonded ?
+        schema.nonNullable().required('Please upload your business license') :
+        schema.nullable().default<File | null>(null)
+    ),
+
+  streetAddress: string().default<string>('').required('Please enter your street address'),
+  city: string().default<string>('').required('Please enter your street city'),
+  state: string().default<string>('').required('Please enter your street state'),
+  zip: string().default<string>('').required('Please enter your street zip code'),
+
+  mailingStreetAddress: string().default<string>(''),
+  mailingCity: string().default<string>(''),
+  mailingState: string().default<string>(''),
+  mailingZip: string().default<string>('')
+})
+
+type BusinessPlanFormValues = ReturnType<typeof formSchema.getDefault>
+
+interface FormCategoryProps extends PropsWithChildren {
   title: string
-  phoneNumber: string
-  email: string
-  businessName: string
-  businessPhoneNumber: string
-  businessStructure: BusinessStructure
-  businessStage: BusinessStage
-  dateBusinessStarted: string
-  professionalLicenses: string[]
-  interestedInFederalContractCertification: boolean
-  appliedForCertificationsInThePast: boolean
-  franchiseAgreement: File | null
-  organizationBonded: boolean
-  holdsBusinessLicense: boolean
-  streetAddress: string
-  city: string
-  state: string
-  zip: string
-  mailingStreetAddress: string
-  mailingCity: string
-  mailingState: string
-  mailingZip: string
 }
 
-type FormCategoryProps = PropsWithChildren & { title: string }
-
-type FormAddressInfoProps = {
+interface FormAddressInfoProps {
   title: string
   withValidation?: boolean
   streetField: keyof BusinessPlanFormValues
   cityField: keyof BusinessPlanFormValues
   stateField: keyof BusinessPlanFormValues
   zipField: keyof BusinessPlanFormValues
-}
-
-function formatPhoneNumber(value: string) {
-  if(!value) return value
-  const phoneNumber = value.replace(/\D/g, '')
-  const phoneNumberLength = phoneNumber.length
-  if(phoneNumberLength < 4) return phoneNumber
-  if(phoneNumberLength < 7) return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`
-  return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`
-}
-
-function validateForm(values: BusinessPlanFormValues) {
-  const {
-    email,
-    firstName,
-    lastName,
-    phoneNumber,
-    title,
-    businessName,
-    businessPhoneNumber,
-    businessStructure,
-    businessStage,
-    dateBusinessStarted,
-    professionalLicenses,
-    streetAddress,
-    city,
-    state,
-    zip
-  } = values
-
-  const errors: Partial<Record<keyof BusinessPlanFormValues, string>> = {}
-
-  if(firstName.trim().length === 0)
-    errors.firstName = 'Please provide your first name'
-  if(lastName.trim().length === 0)
-    errors.lastName = 'Please provide your last name'
-  if(title.trim().length === 0)
-    errors.title = 'Please provide your title'
-
-  if(phoneNumber.trim().length === 0) {
-    errors.phoneNumber = 'Please provide your phone number'
-  } else if(!phoneNumberRegex.test(phoneNumber)) {
-    errors.phoneNumber = 'Please provide a valid phone number'
-  }
-
-  if(email.trim().length === 0) {
-    errors.email = 'Please provide your business email address'
-  } else if(!emailRegex.test(email)) {
-    errors.email = 'Please provide a valid email address'
-  }
-
-  if(businessName.trim().length === 0)
-    errors.businessName = 'Please provide your business name'
-
-  if(businessPhoneNumber.trim().length === 0) {
-    errors.businessPhoneNumber = 'Please provide your business phone number'
-  } else if(!phoneNumberRegex.test(businessPhoneNumber)) {
-    errors.businessPhoneNumber = 'Please provide a valid phone number'
-  }
-
-  if(businessStructure.trim().length === 0)
-    errors.businessStructure = 'Please provide your business structure'
-
-  if(businessStage.trim().length === 0)
-    errors.businessStage = 'Please provide your business stage'
-
-  if(!dateBusinessStarted) {
-    errors.dateBusinessStarted =
-      'Please specify when your business started! If you are unsure of the exact date, an estimate is fine.'
-  } else if(isNaN(Date.parse(dateBusinessStarted))) {
-    errors.dateBusinessStarted = 'Invalid date!'
-  }
-
-  if(professionalLicenses.length > 0) {
-    if(typeof professionalLicenses.find(value => value.trim().length === 0) !== 'undefined') {
-      errors.professionalLicenses = 'Please provide a name for each professional license!'
-    }
-  }
-
-  if(streetAddress.trim().length === 0)
-    errors.streetAddress = 'Please specify your business street address'
-  if(city.trim().length === 0)
-    errors.city = 'Please specify your business city'
-  if(state.trim().length === 0)
-    errors.state = 'Please specify your business state'
-  if(zip.trim().length === 0)
-    errors.zip = 'Please specify your business zip'
-  return errors
 }
 
 const FormCategory = ({ title, children }: FormCategoryProps) =>
@@ -183,14 +184,6 @@ const FormCategory = ({ title, children }: FormCategoryProps) =>
     </Card.Subtitle>
     {children}
   </>
-
-const FormGroupRow = ({ className, ...props }: RowProps) =>
-  <Row {...props} className={classNames('mb-3', props.className)}/>
-
-const FormGroupCol = ({ children, component: Component, ...props }: ColProps & { component?: ComponentType<any> }) =>
-  <Form.Group as={Col} {...props}>
-    {children || (Component ? <Component/> : null)}
-  </Form.Group>
 
 const FormAddressInfo = (props: FormAddressInfoProps) => <FormCategory title={props.title}>
   <FormGroupRow>
@@ -223,29 +216,58 @@ const FormAddressInfo = (props: FormAddressInfoProps) => <FormCategory title={pr
   </FormGroupRow>
 </FormCategory>
 
-const FirstNameField = () =>
-  <Form.FloatingLabel label="First Name">
-    <FieldControl<BusinessPlanFormValues> field="firstName" type="text" placeholder="John"/>
-    <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="firstName"/>
-  </Form.FloatingLabel>
+const FirstNameField = () => <Form.FloatingLabel label="First Name">
+  <FieldControl<BusinessPlanFormValues> field="firstName" type="text" placeholder="John"/>
+  <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="firstName"/>
+</Form.FloatingLabel>
 
-const LastNameField = () =>
-  <Form.FloatingLabel label="Last Name">
-    <FieldControl<BusinessPlanFormValues> field="lastName" type="text" placeholder="Smith"/>
-    <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="lastName"/>
-  </Form.FloatingLabel>
+const LastNameField = () => <Form.FloatingLabel label="Last Name">
+  <FieldControl<BusinessPlanFormValues> field="lastName" type="text" placeholder="Smith"/>
+  <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="lastName"/>
+</Form.FloatingLabel>
 
-const TitleField = () =>
-  <Form.FloatingLabel label="Title">
-    <FieldControl<BusinessPlanFormValues> field="title" type="text" placeholder="CEO"/>
-    <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="title"/>
-  </Form.FloatingLabel>
+const TitleField = () => <Form.FloatingLabel label="Title">
+  <FieldControl<BusinessPlanFormValues> field="title" type="text" placeholder="CEO"/>
+  <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="title"/>
+</Form.FloatingLabel>
 
-const BusinessNameField = () =>
-  <Form.FloatingLabel label="Business Name">
-    <FieldControl<BusinessPlanFormValues> field="businessName" type="text" placeholder="Business Name"/>
-    <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="businessName"/>
+const PhoneNumberField = () => <Form.FloatingLabel label="Phone Number">
+  <FieldControl<BusinessPlanFormValues>
+    field="phoneNumber"
+    placeholder="(XXX) XXX-XXXX"
+    autoCorrect="phone"
+    type="tel"
+  />
+  <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="phoneNumber"/>
+</Form.FloatingLabel>
+
+const EmailField = () => {
+  const { values } = useFormikContext<BusinessPlanFormValues>()
+  return <Form.FloatingLabel label="E-Mail">
+    <FieldControl<BusinessPlanFormValues>
+      field="email"
+      type="email"
+      placeholder="johnsmith@mail.com"
+      isValid={emailRegex.test(values.email)}
+    />
+    <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="email"/>
   </Form.FloatingLabel>
+}
+
+const BusinessNameField = () => <Form.FloatingLabel label="Business Name">
+  <FieldControl<BusinessPlanFormValues> field="businessName" type="text" placeholder="Business Name"/>
+  <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="businessName"/>
+</Form.FloatingLabel>
+
+const BusinessPhoneNumberField = () => <Form.FloatingLabel label="Business Phone Number">
+  <FieldControl<BusinessPlanFormValues>
+    field="businessPhoneNumber"
+    placeholder="(XXX) XXX-XXXX"
+    autoCorrect="phone"
+    type="tel"
+  />
+  <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="businessPhoneNumber"/>
+</Form.FloatingLabel>
 
 const BusinessStructureField = () => <>
   <Form.Label className="px-1">What is the structure of your business?</Form.Label>
@@ -287,38 +309,103 @@ const DateBusinessStartedField = () => <>
   </Form.FloatingLabel>
 </>
 
-const FranchiseAgreementField = () => {
-  const { getFieldHelpers } = useFormikContext<BusinessPlanFormValues>()
-  const { setValue, setTouched } = getFieldHelpers<File | null>('franchiseAgreement')
+const ProfessionalLicensesField = () => <>
+  <Form.Label className="px-1">What professional licenses does your business have?</Form.Label>
+  <FieldExpandingList<BusinessPlanFormValues>
+    withInvalidFeedback
+    placeholder="Professional License"
+    field="professionalLicenses"
+    addButtonLabel="Add License"
+  />
+</>
 
-  const handleClearFranchiseAgreement = (value: boolean) => {
+const InterestedInFederalContractCertificationField = () => <FieldYesNo<BusinessPlanFormValues>
+  field="interestedInFederalContractCertification"
+  label="If your organization is for profit, are you interested in being certified for federal contracts or government grants?"
+/>
+
+const AppliedForCertificationsInThePastField = () => <FieldYesNo<BusinessPlanFormValues>
+  field="appliedForCertificationsInThePast"
+  label="Have you applied for a certification in the past?"
+/>
+
+const FranchiseAgreementField = () => {
+  const { setFieldValue, setFieldTouched } = useFormikContext<BusinessPlanFormValues>()
+
+  const handleExpand = (value: boolean) => {
+    setFieldValue('hasFranchiseAgreement', value, false)
+    setFieldTouched('hasFranchiseAgreement', true, value)
     if(!value) {
-      setValue(null, false)
-      setTouched(true, true)
+      setFieldValue('franchiseAgreement', null, false)
+      setFieldTouched('franchiseAgreement', false, true)
     }
   }
 
   return <>
     <Form.Label as="p" className="mb-2">Is your business part of a franchise?</Form.Label>
-    <YesNoControllerWithCollapse idPrefix="part-of-franchise" onChange={handleClearFranchiseAgreement}>
-      <Form.Label className="mt-2">Please provide your franchise agreement documents</Form.Label>
+    <YesNoControllerWithCollapse idPrefix="part-of-franchise" onExpand={handleExpand}>
+      <Form.Label className="mt-2">Upload your franchise agreement documents</Form.Label>
       <Col md={9}>
         <FieldFileControl<BusinessPlanFormValues> field="franchiseAgreement"/>
+        <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="franchiseAgreement"/>
       </Col>
     </YesNoControllerWithCollapse>
   </>
 }
 
-function BusinessPlanFormBody() {
-  const { submitForm, values, setFieldValue } = useFormikContext<BusinessPlanFormValues>()
+const ProofOfBondingCapacityField = () => {
+  const { setFieldValue, setFieldTouched } = useFormikContext<BusinessPlanFormValues>()
+
+  const handleExpand = (value: boolean) => {
+    setFieldValue('organizationBonded', value, false)
+    setFieldTouched('organizationBonded', true, value)
+    if(!value) {
+      setFieldValue('proofOfBondingCapacity', null, false)
+      setFieldTouched('proofOfBondingCapacity', false, true)
+    }
+  }
+
+  return <>
+    <Form.Label as="p" className="mb-2">Is your organization bonded?</Form.Label>
+    <YesNoControllerWithCollapse idPrefix="organization-bonded" onExpand={handleExpand}>
+      <Form.Label className="mt-2">Upload your proof of bonding capacity</Form.Label>
+      <Col md={9}>
+        <FieldFileControl<BusinessPlanFormValues> field="proofOfBondingCapacity"/>
+        <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="proofOfBondingCapacity"/>
+      </Col>
+    </YesNoControllerWithCollapse>
+  </>
+}
+
+const BusinessLicenseField = () => {
+  const { setFieldValue, setFieldTouched } = useFormikContext<BusinessPlanFormValues>()
+
+  const handleExpand = (value: boolean) => {
+    setFieldValue('hasBusinessLicense', value, false)
+    setFieldTouched('hasBusinessLicense', true, value)
+    if(!value) {
+      setFieldValue('businessLicense', null, false)
+      setFieldTouched('businessLicense', false, true)
+    }
+  }
+
+  return <>
+    <Form.Label as="p" className="mb-2">Does your business have a business license?</Form.Label>
+    <YesNoControllerWithCollapse idPrefix="has-business-license" onExpand={handleExpand}>
+      <Form.Label className="mt-2">Upload your business license</Form.Label>
+      <Col md={9}>
+        <FieldFileControl<BusinessPlanFormValues> field="businessLicense"/>
+        <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="businessLicense"/>
+      </Col>
+    </YesNoControllerWithCollapse>
+  </>
+}
+
+const BusinessPlanFormBody = (props: { preventSubmit: boolean }) => {
+  const { submitForm } = useFormikContext<BusinessPlanFormValues>()
   const [hasSeparateMailingAddress, setHasSeparateMailingAddress] = useState(false)
 
   const handleSeparateMailingAddressChanged = (value: boolean) => setHasSeparateMailingAddress(value)
-
-  const handlePhoneNumberChange = (event: ChangeEvent<HTMLInputElement>) => {
-    event.preventDefault()
-    setFieldValue(event.target.name, formatPhoneNumber(event.target.value))
-  }
 
   return <Form noValidate>
     <FormCategory title="Personal Information">
@@ -328,47 +415,14 @@ function BusinessPlanFormBody() {
       </FormGroupRow>
       <FormGroupRow>
         <FormGroupCol sm={6} lg={3} className="mb-3 mb-lg-0" component={TitleField}/>
-        <FormGroupCol sm={6} lg={3} className="mb-3 mb-lg-0">
-          <Form.FloatingLabel label="Phone Number">
-            <FieldControl<BusinessPlanFormValues>
-              field="phoneNumber"
-              type="tel"
-              placeholder="(XXX) XXX-XXXX"
-              autoCorrect="phone"
-              overrideOnChange onChange={handlePhoneNumberChange}
-              isValid={phoneNumberRegex.test(values.phoneNumber)}
-            />
-            <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="phoneNumber"/>
-          </Form.FloatingLabel>
-        </FormGroupCol>
-        <FormGroupCol lg={6}>
-          <Form.FloatingLabel label="E-Mail">
-            <FieldControl<BusinessPlanFormValues>
-              field="email"
-              type="email"
-              placeholder="johnsmith@mail.com"
-              isValid={emailRegex.test(values.email)}
-            />
-            <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="email"/>
-          </Form.FloatingLabel>
-        </FormGroupCol>
+        <FormGroupCol sm={6} lg={3} className="mb-3 mb-lg-0" component={PhoneNumberField}/>
+        <FormGroupCol lg={6} component={EmailField}/>
       </FormGroupRow>
     </FormCategory>
     <FormCategory title="Business Information">
       <FormGroupRow>
         <FormGroupCol md={6} className="mb-3 mb-md-0" component={BusinessNameField}/>
-        <FormGroupCol md={6}>
-          <Form.FloatingLabel label="Business Phone Number">
-            <FieldControl<BusinessPlanFormValues>
-              field="businessPhoneNumber"
-              type="tel"
-              placeholder="(XXX) XXX-XXXX"
-              overrideOnChange onChange={handlePhoneNumberChange}
-              isValid={phoneNumberRegex.test(values.businessPhoneNumber)}
-            />
-            <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="businessPhoneNumber"/>
-          </Form.FloatingLabel>
-        </FormGroupCol>
+        <FormGroupCol md={6} component={BusinessPhoneNumberField}/>
       </FormGroupRow>
       <FormGroupRow>
         <FormGroupCol md={6} lg={4} className="mb-3 mb-lg-0" component={BusinessStructureField}/>
@@ -376,52 +430,22 @@ function BusinessPlanFormBody() {
         <FormGroupCol lg={4} component={DateBusinessStartedField}/>
       </FormGroupRow>
       <FormGroupRow>
-        <FormGroupCol lg={10}>
-          <Form.Label className="px-1">What professional licenses does your business have?</Form.Label>
-          <FieldExpandingList<BusinessPlanFormValues>
-            withInvalidFeedback
-            placeholder="Professional License"
-            field="professionalLicenses"
-            addButtonLabel="Add License"
-          />
-        </FormGroupCol>
+        <FormGroupCol lg={10} component={ProfessionalLicensesField}/>
       </FormGroupRow>
       <FormGroupRow>
-        <FormGroupCol>
-          <FieldYesNo<BusinessPlanFormValues>
-            field="interestedInFederalContractCertification"
-            label="If your organization is for profit, are you interested in being certified for federal contracts or government grants?"
-          />
-        </FormGroupCol>
+        <FormGroupCol component={InterestedInFederalContractCertificationField}/>
       </FormGroupRow>
       <FormGroupRow>
-        <FormGroupCol>
-          <FieldYesNo<BusinessPlanFormValues>
-            field="appliedForCertificationsInThePast"
-            label="Have you applied for a certification in the past?"
-          />
-        </FormGroupCol>
+        <FormGroupCol component={AppliedForCertificationsInThePastField}/>
       </FormGroupRow>
       <FormGroupRow>
-        <FormGroupCol>
-          <FranchiseAgreementField/>
-        </FormGroupCol>
+        <FormGroupCol component={FranchiseAgreementField}/>
       </FormGroupRow>
       <FormGroupRow>
-        <FormGroupCol>
-          <FieldYesNo<BusinessPlanFormValues>
-            field="holdsBusinessLicense"
-            label="Does your business hold a business license?"
-          />
-        </FormGroupCol>
+        <FormGroupCol component={ProofOfBondingCapacityField}/>
       </FormGroupRow>
       <FormGroupRow>
-        <FormGroupCol>
-          <FieldYesNo<BusinessPlanFormValues>
-            field="organizationBonded"
-            label="Is your organization bonded?"
-          />
-        </FormGroupCol>
+        <FormGroupCol component={BusinessLicenseField}/>
       </FormGroupRow>
     </FormCategory>
     <FormAddressInfo
@@ -435,7 +459,7 @@ function BusinessPlanFormBody() {
     <FormGroupRow>
       <FormGroupCol>
         <Form.Label>Do you have a separate mailing address?</Form.Label>
-        <YesNoController idPrefix="separate-mailing-address" onChange={handleSeparateMailingAddressChanged}/>
+        <YesNoController idPrefix="separate-mailing-address" onExpand={handleSeparateMailingAddressChanged}/>
       </FormGroupCol>
     </FormGroupRow>
     <Collapse in={hasSeparateMailingAddress}>
@@ -451,39 +475,17 @@ function BusinessPlanFormBody() {
     </Collapse>
     <Row>
       <Col className="d-flex">
-        <Button className="flex-fill" variant="dates-primary" type="button" onClick={submitForm}>
+        <Button
+          disabled={props.preventSubmit}
+          className="flex-fill"
+          variant="dates-primary"
+          type="button"
+          onClick={submitForm}>
           Submit
         </Button>
       </Col>
     </Row>
   </Form>
-}
-
-const initialValues: BusinessPlanFormValues = {
-  firstName: '',
-  lastName: '',
-  title: '',
-  phoneNumber: '',
-  email: '',
-  businessName: '',
-  businessPhoneNumber: '',
-  businessStructure: '',
-  businessStage: '',
-  dateBusinessStarted: '',
-  professionalLicenses: [],
-  interestedInFederalContractCertification: false,
-  appliedForCertificationsInThePast: false,
-  franchiseAgreement: null,
-  organizationBonded: false,
-  holdsBusinessLicense: false,
-  streetAddress: '',
-  city: '',
-  state: '',
-  zip: '',
-  mailingStreetAddress: '',
-  mailingCity: '',
-  mailingState: '',
-  mailingZip: ''
 }
 
 export default function BusinessPlanForm() {
@@ -492,26 +494,18 @@ export default function BusinessPlanForm() {
   const router = useRouter()
 
   const handleFormSubmit = async (values: BusinessPlanFormValues) => {
-    const errors = validateForm(values)
-    if(Object.keys(errors).length > 0) throw new Error('Unexpected validation error while submitting form!')
-    await form.submit(values)
+    await form.submit(formSchema.cast(values))
     setState(fromPrevState({ showResultModal: true }))
   }
 
   const handleResultModalDismissed = (event: any) => {
     event.preventDefault()
-    if(submissionState.isSuccess) {
-      router.reload()
-      return
-    }
+    if(submissionState.isSuccess) return router.reload()
     setState(fromPrevState({ showResultModal: false }))
   }
 
   return <Card.Body>
-    <NetlifyForm name={form.name} fields={Object.keys(initialValues).map(key => ({
-      type: key === 'franchiseAgreement' ? 'file' : 'text', // TODO
-      name: key
-    }))}/>
+    <NetlifySchemaForm name={form.name} schema={formSchema}/>
     <Modal centered show={state.showResultModal} enforceFocus backdrop="static">
       <Modal.Header closeButton onClick={handleResultModalDismissed} className="h3 mb-0">
         {submissionState.isSuccess ? 'Thank you!' : 'Uh Oh!'}
@@ -522,10 +516,10 @@ export default function BusinessPlanForm() {
     </Modal>
     <Formik<BusinessPlanFormValues>
       validateOnMount
-      initialValues={initialValues}
-      validate={validateForm}
-      onSubmit={handleFormSubmit}
-      component={BusinessPlanFormBody}
-    />
+      validationSchema={formSchema}
+      initialValues={formSchema.getDefault()}
+      onSubmit={handleFormSubmit}>
+      <BusinessPlanFormBody preventSubmit={submissionState.isSubmitting || submissionState.isComplete}/>
+    </Formik>
   </Card.Body>
 }

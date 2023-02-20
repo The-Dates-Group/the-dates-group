@@ -15,6 +15,7 @@
  */
 import useRequester, { Requester } from '@/components/hooks/useRequester'
 import { Dispatch, SetStateAction, useState } from 'react'
+import { fromPrevState } from '@/utils/component-utils'
 
 const convertValueForFormSubmission = (value: any, allowFiles: boolean): any => {
   if(Array.isArray(value)) return value.map(item => convertValueForFormSubmission(item, allowFiles)).join(', ')
@@ -42,6 +43,7 @@ export type FormContentType = 'application/x-www-form-urlencoded' | 'multipart/f
 export type FormSubmissionState = {
   readonly isComplete: boolean
   readonly isSuccess: boolean
+  readonly isSubmitting: boolean
 }
 
 export class FormSubmission<F extends object> {
@@ -64,10 +66,11 @@ export class FormSubmission<F extends object> {
   }
 
   submit(form: F): Promise<boolean> {
+    this.setState(fromPrevState({ isSubmitting: true }))
+    console.debug('Sending form:', form)
     const body = this.contentType === 'application/x-www-form-urlencoded' ?
       this.createFormUrlEncoded(form) :
       this.createFormData(form)
-    console.debug('Sending form:', body)
     return this.requester.axios.post('/', body, { headers: { 'Content-Type': this.contentType } })
       .then(response => {
         const isSuccess = response.status < 400
@@ -79,7 +82,7 @@ export class FormSubmission<F extends object> {
         return false
       })
       .then(isSuccess => {
-        this.setState({ isComplete: true, isSuccess })
+        this.setState({ isComplete: true, isSubmitting: false, isSuccess })
         return isSuccess
       })
   }
@@ -144,7 +147,7 @@ export default function useFormSubmission<F extends object>(
   contentType: FormContentType = 'application/x-www-form-urlencoded'
 ): [form: FormSubmission<F>, state: FormSubmissionState] {
   const requester = useRequester()
-  const [state, setState] = useState<FormSubmissionState>({ isComplete: false, isSuccess: false })
+  const [state, setState] = useState<FormSubmissionState>({ isComplete: false, isSuccess: false, isSubmitting: false })
   const form = new FormSubmission(requester, setState, name, contentType)
   return [form, state]
 }

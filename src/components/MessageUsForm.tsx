@@ -13,43 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { FunctionComponent, useState } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/router'
-import { Button, Card, Col, Collapse, FloatingLabel, Form, Modal, Row } from 'react-bootstrap'
+import { Button, Card, Form, Modal } from 'react-bootstrap'
 import { Formik, FormikProps } from 'formik'
-import { emailRegex } from '@/utils/regexes'
+import { object, string } from 'yup'
 import useFormSubmission from '@/components/hooks/useFormSubmission'
 import { fromPrevState } from '@/utils/component-utils'
-import NetlifyForm from '@/components/NetlifyForm'
+import { NetlifySchemaForm } from '@/components/NetlifyForm'
+import { FormGroupCol, FormGroupRow } from '@/components/forms/helpers'
+import FieldControl from '@/components/forms/FieldControl'
+import FieldInvalidFeedbackCollapse from '@/components/forms/FieldInvalidFeedbackCollapse'
 
-type MessageUsFormValues = {
-  name: string
-  email: string
-  subject: string
-  message: string
-}
+const formSchema = object({
+  name: string()
+    .default<string>('')
+    .required('Please enter your name')
+    .trim()
+    .meta({ formType: 'text' }),
+  email: string()
+    .default<string>('')
+    .email('Please provide a valid email address')
+    .required('Please enter your email address')
+    .trim()
+    .meta({ formType: 'email' }),
+  subject: string()
+    .default<string>('')
+    .required('Please provide a subject')
+    .trim()
+    .meta({ formType: 'text' }),
+  message: string()
+    .default<string>('')
+    .required('Please provide a message')
+    .trim()
+    .meta({ formType: 'text' })
+})
 
-const validateForm = ({ email, message, name, subject }: MessageUsFormValues) => {
-  const errors: Partial<MessageUsFormValues> = {}
+const initialValues = formSchema.getDefault()
 
-  if(name.length < 1) errors.name = 'Please enter your name'
-
-  if(email.length < 1) errors.email = 'Please provide an email address'
-  else if(!emailRegex.test(email)) errors.email = 'Email address is not valid'
-
-  if(subject.length < 1) errors.subject = 'Please provide a subject'
-
-  if(message.length < 1) errors.message = 'Please provide a message'
-
-  return errors
-}
-
-const initialValues: MessageUsFormValues = {
-  name: '',
-  email: '',
-  subject: '',
-  message: ''
-}
+type MessageUsFormValues = typeof initialValues
 
 export default function MessageUsForm() {
   const router = useRouter()
@@ -57,8 +59,7 @@ export default function MessageUsForm() {
   const [state, setState] = useState({ showResultModal: false })
 
   const handleFormSubmit = async (values: MessageUsFormValues) => {
-    const errors = validateForm(values)
-    if(Object.keys(errors).length > 0) throw new Error('Unexpected validation error while submitting form!')
+    values = await formSchema.validate(values)
     await form.submit(values)
     setState(fromPrevState({ showResultModal: true }))
   }
@@ -78,10 +79,7 @@ export default function MessageUsForm() {
   }
 
   return <Card.Body>
-    <NetlifyForm name={form.name} fields={Object.keys(initialValues).map(key => ({
-      type: 'text',
-      name: key
-    }))}/>
+    <NetlifySchemaForm name={form.name} schema={formSchema}/>
     <Modal centered show={state.showResultModal} enforceFocus backdrop="static">
       <Modal.Header closeButton onClick={handleResultModalDismissed} className="h3 mb-0">
         {submissionState.isSuccess ? 'Thank you!' : 'Uh Oh!'}
@@ -90,120 +88,52 @@ export default function MessageUsForm() {
         {submissionState.isSuccess ? 'Your message was submitted!' : 'Something went wrong, try again later!'}
       </Modal.Body>
     </Modal>
-    <Formik validateOnMount initialValues={initialValues} validate={validateForm} onSubmit={handleFormSubmit}>
-      {MessageUsFormBody}
-    </Formik>
+    <Formik<MessageUsFormValues>
+      validateOnMount
+      validationSchema={formSchema}
+      initialValues={initialValues}
+      onSubmit={handleFormSubmit}
+      component={MessageUsFormBody}/>
   </Card.Body>
 }
 
-const MessageUsFormBody: FunctionComponent<FormikProps<MessageUsFormValues>> = (
-  {
-    handleSubmit,
-    handleChange,
-    handleBlur,
-    isValid,
-    values,
-    touched,
-    errors
-  }
-) => <Form noValidate onSubmit={handleSubmit}>
-  <Row className="mb-3">
-    <Form.Group as={Col} md={6} className="mb-3 mb-md-0">
-      <MessageUsFormField
-        label="Name"
-        type="text"
-        name="name"
-        placeholder="John Smith"
-        value={values.name}
-        handleChange={handleChange}
-        handleBlur={handleBlur}
-        touched={touched.name}
-        error={errors.name}
-      />
-    </Form.Group>
-    <Form.Group as={Col} md={6}>
-      <MessageUsFormField
-        label="E-Mail"
-        type="email"
-        name="email"
-        placeholder="johnsmith@mail.com"
-        value={values.email}
-        handleChange={handleChange}
-        handleBlur={handleBlur}
-        touched={touched.email}
-        error={errors.email}
-      />
-    </Form.Group>
-  </Row>
-  <Row className="mb-3">
-    <Form.Group as={Col}>
-      <MessageUsFormField
-        label="Subject"
-        type="text"
-        name="subject"
-        placeholder="A Message"
-        value={values.subject}
-        handleChange={handleChange}
-        handleBlur={handleBlur}
-        touched={touched.subject}
-        error={errors.subject}
-      />
-    </Form.Group>
-  </Row>
-  <Row className="mb-3">
-    <Form.Group as={Col}>
-      <MessageUsFormField
-        textarea
-        label="Message"
-        type="text"
-        name="message"
-        placeholder="Hello!"
-        value={values.message}
-        handleChange={handleChange}
-        handleBlur={handleBlur}
-        touched={touched.message}
-        error={errors.message}
-      />
-    </Form.Group>
-  </Row>
-  <Row>
-    <Col className="d-flex">
-      <Button className="flex-fill" type="submit" variant="dates-primary" disabled={!isValid}>
-        Submit
-      </Button>
-    </Col>
-  </Row>
-</Form>
+const MessageUsFormBody = ({ submitForm }: FormikProps<MessageUsFormValues>) =>
+  <Form noValidate className="d-flex flex-column">
+    <FormGroupRow>
+      <FormGroupCol md={6} className="mb-3 mb-md-0" component={NameField}/>
+      <FormGroupCol md={6} component={EmailField}/>
+    </FormGroupRow>
+    <FormGroupRow>
+      <FormGroupCol component={SubjectField}/>
+    </FormGroupRow>
+    <FormGroupRow>
+      <FormGroupCol component={MessageField}/>
+    </FormGroupRow>
+    <Button className="flex-fill" type="button" variant="dates-primary" onClick={submitForm}>
+      Submit
+    </Button>
+  </Form>
 
-type MessageUsFormFieldProps = {
-  label: string
-  name: string
-  textarea?: boolean
-  type: string
-  placeholder: string
-  value: string
-  handleChange: FormikProps<MessageUsFormValues>['handleChange']
-  handleBlur: FormikProps<MessageUsFormValues>['handleBlur']
-  touched?: boolean
-  error?: string
-}
+const NameField = () =>
+  <Form.FloatingLabel label="Name">
+    <FieldControl<MessageUsFormValues> field="name" type="text" placeholder="John Smith"/>
+    <FieldInvalidFeedbackCollapse<MessageUsFormValues> field="name"/>
+  </Form.FloatingLabel>
 
-const MessageUsFormField = (props: MessageUsFormFieldProps) =>
-  <FloatingLabel label={props.label}>
-    <Form.Control
-      as={props.textarea ? 'textarea' : 'input'}
-      type={props.type}
-      name={props.name}
-      placeholder={props.placeholder}
-      value={props.value}
-      onChange={props.handleChange}
-      onBlur={props.handleBlur}
-      isValid={props.touched && !props.error}
-      isInvalid={props.touched && !!props.error}
-    />
-    <Collapse in={props.touched && !!props.error}>
-      <Form.Control.Feedback type="invalid">
-        {props.error}
-      </Form.Control.Feedback>
-    </Collapse>
-  </FloatingLabel>
+const EmailField = () =>
+  <Form.FloatingLabel label="Email">
+    <FieldControl<MessageUsFormValues> field="email" type="email" placeholder="Email"/>
+    <FieldInvalidFeedbackCollapse<MessageUsFormValues> field="email"/>
+  </Form.FloatingLabel>
+
+const SubjectField = () =>
+  <Form.FloatingLabel label="Subject">
+    <FieldControl<MessageUsFormValues> field="subject" type="text" placeholder="A Message"/>
+    <FieldInvalidFeedbackCollapse<MessageUsFormValues> field="subject"/>
+  </Form.FloatingLabel>
+
+const MessageField = () =>
+  <Form.FloatingLabel label="Message">
+    <FieldControl<MessageUsFormValues> as="textarea" field="message" type="text" placeholder="Hello!"/>
+    <FieldInvalidFeedbackCollapse<MessageUsFormValues> field="message"/>
+  </Form.FloatingLabel>

@@ -13,17 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type { ChangeEventHandler, FocusEventHandler } from 'react'
-import type { FieldProp } from '@/components/forms/FieldProp'
+import { ChangeEventHandler, FocusEventHandler, useEffect, useRef } from 'react'
 import { Form, FormControlProps } from 'react-bootstrap'
 import { useFormikContext } from 'formik'
-import { useEffect, useRef } from 'react'
+import type { FieldProp } from '@/components/forms/FieldProp'
 
-export interface FieldControlProps<F>
-  extends FieldProp<F>, FormControlProps {
+export interface FieldControlProps<F> extends FieldProp<F>, FormControlProps {
   overrideOnChange?: boolean
   overrideOnBlur?: boolean
 }
+
+export type FieldPhoneControlProps<F> =
+  Omit<FieldControlProps<F>, keyof 'as' | 'type' | 'overrideOnChange' | 'overrideOnBlur'>
 
 export type FieldFileControlProps<F> =
   Omit<FieldControlProps<F>, keyof 'as' | 'type' | 'overrideOnChange' | 'overrideOnBlur'>
@@ -87,6 +88,6 @@ export function FieldFileControl<F>(props: FieldFileControlProps<F>) {
     onChange={handleChange}
     onBlur={handleBlur}
     isValid={isValid || (values[field] !== null && touched[field] && !errors[field])}
-    isInvalid={isInvalid || (touched[field] && !!errors[field])}
+    isInvalid={isInvalid || (values[field] === null && touched[field] && !!errors[field])}
   />
 }

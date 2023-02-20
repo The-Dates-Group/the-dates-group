@@ -36,6 +36,6 @@ export default function FieldYesNo<F>({ field, label }: FieldYesNoProps<F>) {
 
   return <>
     <Form.Label>{label}</Form.Label>
-    <YesNoController idPrefix={field} defaultValue={fieldValue} onChange={handleOnChange}/>
+    <YesNoController idPrefix={field} defaultValue={fieldValue} onExpand={handleOnChange}/>
   </>
 }

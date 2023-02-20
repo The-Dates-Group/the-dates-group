@@ -19,12 +19,12 @@ import { Collapse, Form } from 'react-bootstrap'
 export interface YesNoControllerProps {
   idPrefix: string
   defaultValue?: boolean
-  onChange?: (value: boolean) => void
+  onExpand?: (value: boolean) => void
 }
 
 export type YesNoControllerWithCollapseProps = PropsWithChildren<YesNoControllerProps>
 
-export default function YesNoController({ idPrefix, defaultValue, onChange }: YesNoControllerProps) {
+export default function YesNoController({ idPrefix, defaultValue, onExpand }: YesNoControllerProps) {
   const [value, setValue] = useState(defaultValue || false)
 
   const yesID = `${idPrefix}-yes`
@@ -33,14 +33,14 @@ export default function YesNoController({ idPrefix, defaultValue, onChange }: Ye
   const handleYesChanged = (event: ChangeEvent<HTMLInputElement>) => {
     if(event.target.checked) {
       setValue(true)
-      if(onChange) onChange(true)
+      if(onExpand) onExpand(true)
     }
   }
 
   const handleNoChanged = (event: ChangeEvent<HTMLInputElement>) => {
     if(event.target.checked) {
       setValue(false)
-      if(onChange) onChange(false)
+      if(onExpand) onExpand(false)
     }
   }
 
@@ -57,16 +57,16 @@ export default function YesNoController({ idPrefix, defaultValue, onChange }: Ye
 }
 
 export function YesNoControllerWithCollapse(props: YesNoControllerWithCollapseProps) {
-  const { idPrefix, defaultValue, children, onChange } = props
+  const { idPrefix, defaultValue, children, onExpand } = props
   const [expand, setExpand] = useState(defaultValue)
 
   const handleOnChange = (value: boolean) => {
     setExpand(value)
-    if(onChange) onChange(value)
+    if(onExpand) onExpand(value)
   }
 
   return <>
-    <YesNoController idPrefix={idPrefix} defaultValue={defaultValue} onChange={handleOnChange}/>
+    <YesNoController idPrefix={idPrefix} defaultValue={defaultValue} onExpand={handleOnChange}/>
     <Collapse in={expand}>
       <div>{children}</div>
     </Collapse>

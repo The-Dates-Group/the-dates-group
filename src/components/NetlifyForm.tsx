@@ -15,6 +15,7 @@
  */
 
 import { FormSubmission } from '@/components/hooks/useFormSubmission'
+import { AnyObject, ObjectSchema, SchemaDescription } from 'yup'
 
 export type NetlifyFormField = {
   name: HTMLInputElement['name']
@@ -26,6 +27,11 @@ export type NetlifyFormProps = {
   fields: NetlifyFormField[]
 }
 
+export interface NetlifySchemaForm<F extends AnyObject> {
+  name: string
+  schema: ObjectSchema<F>
+}
+
 export default function NetlifyForm(props: NetlifyFormProps) {
   return (
     <form hidden name={props.name} data-netlify="true">
@@ -33,6 +39,23 @@ export default function NetlifyForm(props: NetlifyFormProps) {
       {props.fields.map(field =>
         <input key={field.name} type={field.type} name={FormSubmission.formatFieldName(field.name)}/>
       )}
+    </form>
+  )
+}
+
+export function NetlifySchemaForm<F extends AnyObject>({ name, schema }: NetlifySchemaForm<F>) {
+  return (
+    <form hidden name={name} data-netlify="true">
+      <input type="hidden" name="form-name" value={name}/>
+      {Object.keys(schema.fields).map(key => {
+        const description = schema.fields[key].describe() as SchemaDescription
+        const meta = description.meta as any
+        return <input
+          key={key}
+          type={meta ? meta['formType'] || 'text' : 'text'}
+          name={FormSubmission.formatFieldName(key)}
+        />
+      })}
     </form>
   )
 }
