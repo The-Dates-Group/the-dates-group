@@ -71,6 +71,7 @@ const formSchema = object({
   title: string().default<string>('').required('Please enter your title'),
 
   phoneNumber: string()
+    .meta({ formType: 'tel' })
     .default<string>('')
     .transform(formatPhoneNumber)
     .required('Please enter your phone number')
@@ -78,18 +79,18 @@ const formSchema = object({
       name: 'matches',
       message: 'Please enter a valid phone number',
       test: (value: string) => value.length > 0 ? phoneNumberRegex.test(value) : true
-    })
-    .meta({ formType: 'tel' }),
+    }),
 
   email: string()
+    .meta({ formType: 'email' })
     .email('Please enter a valid email')
     .default<string>('')
-    .required('Please enter your email')
-    .meta({ formType: 'email' }),
+    .required('Please enter your email'),
 
   businessName: string().default<string>('').required('Please enter your business name'),
 
   businessPhoneNumber: string()
+    .meta({ formType: 'tel' })
     .default<string>('')
     .transform(formatPhoneNumber)
     .required('Please enter your business phone number')
@@ -97,8 +98,7 @@ const formSchema = object({
       name: 'matches',
       message: 'Please enter a valid phone number',
       test: (value: string) => value.length > 0 ? phoneNumberRegex.test(value) : true
-    })
-    .meta({ formType: 'tel' }),
+    }),
 
   businessStructure: string<BusinessStructure | string>()
     .default<string>('')
@@ -109,9 +109,9 @@ const formSchema = object({
     .required('Please specify your business structure'),
 
   dateBusinessStarted: string()
+    .meta({ formType: 'date' })
     .default<string>('')
-    .required('Please specify when your business started! If you are unsure of the exact date, an estimate is fine.')
-    .meta({ formType: 'date' }),
+    .required('Please specify when your business started! If you are unsure of the exact date, an estimate is fine.'),
 
   professionalLicenses: array(string().default<string>(''))
     .default<string[]>([])
@@ -159,7 +159,28 @@ const formSchema = object({
   mailingStreetAddress: string().default<string>(''),
   mailingCity: string().default<string>(''),
   mailingState: string().default<string>(''),
-  mailingZip: string().default<string>('')
+  mailingZip: string().default<string>(''),
+
+  hasLogo: boolean().default<boolean>(false).required(),
+  logo: file()
+    .meta({ formType: 'file' })
+    .when(['hasLogo'], (values, schema, { parent }) =>
+      parent && parent.hasLogo ?
+        schema.nonNullable().required('Please upload your logo') :
+        schema.nullable().default<File | null>(null)
+    ),
+  interestedInLogoServices: boolean().default<boolean>(false),
+
+  hasWebsite: boolean().default<boolean>(false).required(),
+  website: string()
+    .url('Not a valid URL')
+    .meta({ formType: 'url' })
+    .when(['hasWebsite'], (values, schema, { parent }) =>
+      parent && parent.hasWebsite ?
+        schema.nonNullable().required('Please enter the URL of your website') :
+        schema.default<string>('')
+    ),
+  interestedInWebsiteServices: boolean().default<boolean>(false)
 })
 
 type BusinessPlanFormValues = ReturnType<typeof formSchema.getDefault>
@@ -401,6 +422,84 @@ const BusinessLicenseField = () => {
   </>
 }
 
+const LogoField = () => {
+  const { setFieldValue, setFieldTouched, values } = useFormikContext<BusinessPlanFormValues>()
+
+  const handleExpand = (value: boolean) => {
+    setFieldValue('hasLogo', value, false)
+    setFieldTouched('hasLogo', true, false)
+    if(!value) {
+      setFieldValue('logo', null, false)
+      setFieldTouched('logo', false, true)
+    } else {
+      setFieldValue('interestedInLogoServices', false, false)
+      setFieldTouched('interestedInLogoServices', false, true)
+    }
+  }
+
+  return <>
+    <Form.Label as="p" className="mb-2">Does your business have a logo?</Form.Label>
+    <YesNoController idPrefix="has-logo" onExpand={handleExpand}/>
+    <Collapse in={values.hasLogo}>
+      <div>
+        <Form.Label className="mt-2">Upload your business logo</Form.Label>
+        <Col>
+          <FieldFileControl<BusinessPlanFormValues> field="logo"/>
+          <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="logo"/>
+        </Col>
+      </div>
+    </Collapse>
+    <Collapse in={!values.hasLogo}>
+      <div>
+        <FieldYesNo<BusinessPlanFormValues>
+          labelClassName="mt-2"
+          label="The Dates Group provides logos, are you interested?"
+          field="interestedInLogoServices"
+        />
+      </div>
+    </Collapse>
+  </>
+}
+
+const WebsiteField = () => {
+  const { setFieldValue, setFieldTouched, values } = useFormikContext<BusinessPlanFormValues>()
+
+  const handleExpand = (value: boolean) => {
+    setFieldValue('hasWebsite', value, false)
+    setFieldTouched('hasWebsite', true, false)
+    if(!value) {
+      setFieldValue('website', '', false)
+      setFieldTouched('website', false, true)
+    } else {
+      setFieldValue('interestedInWebsiteServices', false, false)
+      setFieldTouched('interestedInWebsiteServices', false, true)
+    }
+  }
+
+  return <>
+    <Form.Label as="p" className="mb-2">Does your business have a website?</Form.Label>
+    <YesNoController idPrefix="has-website" onExpand={handleExpand}/>
+    <Collapse in={values.hasWebsite}>
+      <div>
+        <Form.Label className="mt-2">Enter the URL of your business website</Form.Label>
+        <Col>
+          <FieldControl<BusinessPlanFormValues> field="website" placeholder="https://my-website.com/" type="url"/>
+          <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="website"/>
+        </Col>
+      </div>
+    </Collapse>
+    <Collapse in={!values.hasWebsite}>
+      <div>
+        <FieldYesNo<BusinessPlanFormValues>
+          labelClassName="mt-2"
+          label="The Dates Group provides website plans, are you interested?"
+          field="interestedInWebsiteServices"
+        />
+      </div>
+    </Collapse>
+  </>
+}
+
 const BusinessPlanFormBody = (props: { preventSubmit: boolean }) => {
   const { submitForm } = useFormikContext<BusinessPlanFormValues>()
   const [hasSeparateMailingAddress, setHasSeparateMailingAddress] = useState(false)
@@ -473,6 +572,12 @@ const BusinessPlanFormBody = (props: { preventSubmit: boolean }) => {
         />
       </div>
     </Collapse>
+    <FormCategory title="Branding Information">
+      <FormGroupRow>
+        <FormGroupCol md={6} className="mb-3 mb-md-0" component={LogoField}/>
+        <FormGroupCol md={6} component={WebsiteField}/>
+      </FormGroupRow>
+    </FormCategory>
     <Row>
       <Col className="d-flex">
         <Button

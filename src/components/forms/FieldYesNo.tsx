@@ -20,9 +20,10 @@ import YesNoController from '@/components/YesNoController'
 
 export interface FieldYesNoProps<F> extends FieldProp<F> {
   label: string
+  labelClassName?: string
 }
 
-export default function FieldYesNo<F>({ field, label }: FieldYesNoProps<F>) {
+export default function FieldYesNo<F>({ field, label, labelClassName }: FieldYesNoProps<F>) {
   const { values, touched, errors, ...formik } = useFormikContext<F>()
 
   const fieldValue = values[field]
@@ -35,7 +36,7 @@ export default function FieldYesNo<F>({ field, label }: FieldYesNoProps<F>) {
   }
 
   return <>
-    <Form.Label>{label}</Form.Label>
+    <Form.Label className={labelClassName}>{label}</Form.Label>
     <YesNoController idPrefix={field} defaultValue={fieldValue} onExpand={handleOnChange}/>
   </>
 }
