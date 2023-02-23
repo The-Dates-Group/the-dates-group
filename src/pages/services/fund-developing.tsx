@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Card } from 'react-bootstrap'
+import { Button, Card } from 'react-bootstrap'
 import Page from '@/components/Page'
 import VerticallyRuled from '@/components/VerticallyRuled'
-import BusinessPlanForm from '@/components/BusinessPlanForm'
 
 const FundDeveloping = () =>
   <Page>
@@ -108,10 +107,8 @@ const FundDeveloping = () =>
             We'll eliminate the confusion with certifications!
           </Card.Subtitle>
           <Card.Text>
-            Certifications provide access to corporate and government contracts and bids. The process can be tedious,
-            to
-            say the least. Here at The Dates Group, we not only help you become certified, we also walk you through
-            the
+            Certifications provide access to corporate and government contracts and bids. The process can be tedious, to
+            say the least. Here at The Dates Group, we not only help you become certified, we also walk you through the
             process of pre-certification. We ensure that you know your next steps once your certification is approved.
             We’re able to guide you as to which certifying agency is best suited for you and your industry.
           </Card.Text>
@@ -131,9 +128,14 @@ const FundDeveloping = () =>
     <Page.Section>
       <Card className="card-section">
         <Card.Header as="h1" className="text-center">
-          Form
+          Ready to get started?
         </Card.Header>
-        <BusinessPlanForm/>
+        <Card.Body className="text-center">
+          <Card.Text as="span" className="me-3">
+            Fill out our business profile form
+          </Card.Text>
+          <Button variant="dates-primary" href="/services/business-plan">Form</Button>
+        </Card.Body>
       </Card>
     </Page.Section>
   </Page>

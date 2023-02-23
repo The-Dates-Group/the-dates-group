@@ -13,13 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-textarea.form-control {
-  resize: none;
-  height: 370px !important;
-}
 
-.form-label[required]::after {
-  content: ' *';
-  color: dates-theme-color(primary);
-  font-weight: bold;
+import Page from '@/components/Page'
+import { Card } from 'react-bootstrap'
+import BusinessPlanForm from '@/components/BusinessPlanForm'
+
+export default function BusinessPlan() {
+  return <Page>
+    <Page.Section>
+      <Card className="card-section">
+        <Card.Header as="h1" className="text-center">Business Plan Form</Card.Header>
+        <BusinessPlanForm/>
+      </Card>
+    </Page.Section>
+  </Page>
 }

@@ -17,7 +17,7 @@ import { PropsWithChildren, useState } from 'react'
 import { Button, Card, Col, Collapse, Form, Modal, Row } from 'react-bootstrap'
 import { useRouter } from 'next/router'
 import { Formik, useFormikContext } from 'formik'
-import { array, boolean, object, string } from 'yup'
+import { array, boolean, object, string, TestConfig } from 'yup'
 
 import useFormSubmission from '@/components/hooks/useFormSubmission'
 import { NetlifySchemaForm } from '@/components/NetlifyForm'
@@ -61,10 +61,20 @@ type BusinessStage =
   | 'Maturity/Possibly in Need of Revamping'
   | string
 
+const pdfTest: TestConfig<File> = {
+  message: 'File must be a pdf',
+  name: 'isPdf',
+  test: (value) => value.type === 'application/pdf'
+}
+
+const matchesPhoneRegex: TestConfig<string> = {
+  name: 'matches',
+  message: 'Please enter a valid phone number',
+  test: (value: string) => value.length > 0 ? phoneNumberRegex.test(value) : true
+}
+
 const formSchema = object({
-  firstName: string()
-    .default<string>('')
-    .required('Please enter your first name'),
+  firstName: string().default<string>('').required('Please enter your first name'),
 
   lastName: string().default<string>('').required('Please enter your last name'),
 
@@ -75,11 +85,7 @@ const formSchema = object({
     .default<string>('')
     .transform(formatPhoneNumber)
     .required('Please enter your phone number')
-    .test({
-      name: 'matches',
-      message: 'Please enter a valid phone number',
-      test: (value: string) => value.length > 0 ? phoneNumberRegex.test(value) : true
-    }),
+    .test(matchesPhoneRegex),
 
   email: string()
     .meta({ formType: 'email' })
@@ -94,11 +100,7 @@ const formSchema = object({
     .default<string>('')
     .transform(formatPhoneNumber)
     .required('Please enter your business phone number')
-    .test({
-      name: 'matches',
-      message: 'Please enter a valid phone number',
-      test: (value: string) => value.length > 0 ? phoneNumberRegex.test(value) : true
-    }),
+    .test(matchesPhoneRegex),
 
   businessStructure: string<BusinessStructure | string>()
     .default<string>('')
@@ -129,7 +131,7 @@ const formSchema = object({
     .meta({ formType: 'file' })
     .when(['hasFranchiseAgreement'], (values, schema, { parent }) =>
       parent && parent.hasFranchiseAgreement ?
-        schema.nonNullable().required('Please upload your franchise agreement documentation') :
+        schema.nonNullable().required('Please upload your franchise agreement documentation').test(pdfTest) :
         schema.nullable().default<File | null>(null)
     ),
 
@@ -138,7 +140,7 @@ const formSchema = object({
     .meta({ formType: 'file' })
     .when(['organizationBonded'], (values, schema, { parent }) =>
       parent && parent.organizationBonded ?
-        schema.nonNullable().required('Please upload your proof of bonding capacity') :
+        schema.nonNullable().required('Please upload your proof of bonding capacity').test(pdfTest) :
         schema.nullable().default<File | null>(null)
     ),
 
@@ -147,7 +149,7 @@ const formSchema = object({
     .meta({ formType: 'file' })
     .when(['hasBusinessLicense'], (values, schema, { parent }) =>
       parent && parent.organizationBonded ?
-        schema.nonNullable().required('Please upload your business license') :
+        schema.nonNullable().required('Please upload your business license').test(pdfTest) :
         schema.nullable().default<File | null>(null)
     ),
 
@@ -180,7 +182,45 @@ const formSchema = object({
         schema.nonNullable().required('Please enter the URL of your website') :
         schema.default<string>('')
     ),
-  interestedInWebsiteServices: boolean().default<boolean>(false)
+  interestedInWebsiteServices: boolean().default<boolean>(false),
+
+  companyHistory: string().default<string>(''),
+  companySlogan: string().default<string>(''),
+  companyVision: string().default<string>(''),
+  companyMission: string().default<string>(''),
+  problemsBusinessSolves: string()
+    .default<string>('')
+    .required('Please tell us about what the problems your business solves'),
+  challengesStartingBusiness: string().default<string>(''),
+
+  numberOfFullTimeEmployees: string()
+    .default<string>('')
+    .required('Please enter the number of full time employees you have'),
+  numberOfPartTimeEmployees: string()
+    .default<string>('')
+    .required('Please enter the number of part time employees you have'),
+  numberOfContractors: string().default<string>(''),
+
+  targetMarkets: array(string().default<string>(''))
+    .default<string[]>([])
+    .test({
+      name: 'check-items',
+      message: 'Please provide a target market for each field',
+      test: (value: string[]) => typeof value.find(item => item.length === 0) === 'undefined'
+    }),
+
+  competitors: string().default<string>(''),
+  whatMakesCompanyUnique: string().default<string>(''),
+
+  industryRisks: string().default<string>(''),
+
+  hasBudget: boolean().default<boolean>(false),
+
+  usesAccountingSoftware: boolean().default<boolean>(false),
+
+  worksWithAccountantOrBookkeeper: boolean().default<boolean>(false),
+
+  hasReceivedLoans: boolean().default<boolean>(false)
 })
 
 type BusinessPlanFormValues = ReturnType<typeof formSchema.getDefault>
@@ -291,7 +331,7 @@ const BusinessPhoneNumberField = () => <Form.FloatingLabel label="Business Phone
 </Form.FloatingLabel>
 
 const BusinessStructureField = () => <>
-  <Form.Label className="px-1">What is the structure of your business?</Form.Label>
+  <Form.Label className="px-1" required>What is the structure of your business?</Form.Label>
   <Form.FloatingLabel label="Business Structure">
     <FieldSelectionWithOther<BusinessPlanFormValues>
       type="text"
@@ -304,7 +344,7 @@ const BusinessStructureField = () => <>
 </>
 
 const BusinessStageField = () => <>
-  <Form.Label className="px-1">What stage is business operating at?</Form.Label>
+  <Form.Label className="px-1" required>What stage is business operating at?</Form.Label>
   <Form.FloatingLabel label="Business Stage">
     <FieldSelectionWithOther<BusinessPlanFormValues>
       type="text"
@@ -323,7 +363,7 @@ const BusinessStageField = () => <>
 </>
 
 const DateBusinessStartedField = () => <>
-  <Form.Label className="px-1">What date did your business start?</Form.Label>
+  <Form.Label className="px-1" required>What date did your business start?</Form.Label>
   <Form.FloatingLabel label="Date Business Started" controlId="date-business-started">
     <FieldControl<BusinessPlanFormValues> field="dateBusinessStarted" type="date"/>
     <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="dateBusinessStarted"/>
@@ -365,7 +405,7 @@ const FranchiseAgreementField = () => {
   return <>
     <Form.Label as="p" className="mb-2">Is your business part of a franchise?</Form.Label>
     <YesNoControllerWithCollapse idPrefix="part-of-franchise" onExpand={handleExpand}>
-      <Form.Label className="mt-2">Upload your franchise agreement documents</Form.Label>
+      <Form.Label className="mt-2" required>Upload your franchise agreement documents</Form.Label>
       <Col md={9}>
         <FieldFileControl<BusinessPlanFormValues> field="franchiseAgreement"/>
         <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="franchiseAgreement"/>
@@ -389,7 +429,7 @@ const ProofOfBondingCapacityField = () => {
   return <>
     <Form.Label as="p" className="mb-2">Is your organization bonded?</Form.Label>
     <YesNoControllerWithCollapse idPrefix="organization-bonded" onExpand={handleExpand}>
-      <Form.Label className="mt-2">Upload your proof of bonding capacity</Form.Label>
+      <Form.Label className="mt-2" required>Upload your proof of bonding capacity</Form.Label>
       <Col md={9}>
         <FieldFileControl<BusinessPlanFormValues> field="proofOfBondingCapacity"/>
         <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="proofOfBondingCapacity"/>
@@ -413,7 +453,7 @@ const BusinessLicenseField = () => {
   return <>
     <Form.Label as="p" className="mb-2">Does your business have a business license?</Form.Label>
     <YesNoControllerWithCollapse idPrefix="has-business-license" onExpand={handleExpand}>
-      <Form.Label className="mt-2">Upload your business license</Form.Label>
+      <Form.Label className="mt-2" required>Upload your business license</Form.Label>
       <Col md={9}>
         <FieldFileControl<BusinessPlanFormValues> field="businessLicense"/>
         <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="businessLicense"/>
@@ -442,7 +482,7 @@ const LogoField = () => {
     <YesNoController idPrefix="has-logo" onExpand={handleExpand}/>
     <Collapse in={values.hasLogo}>
       <div>
-        <Form.Label className="mt-2">Upload your business logo</Form.Label>
+        <Form.Label className="mt-2" required>Upload your business logo</Form.Label>
         <Col>
           <FieldFileControl<BusinessPlanFormValues> field="logo"/>
           <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="logo"/>
@@ -481,7 +521,7 @@ const WebsiteField = () => {
     <YesNoController idPrefix="has-website" onExpand={handleExpand}/>
     <Collapse in={values.hasWebsite}>
       <div>
-        <Form.Label className="mt-2">Enter the URL of your business website</Form.Label>
+        <Form.Label className="mt-2" required>Enter the URL of your business website</Form.Label>
         <Col>
           <FieldControl<BusinessPlanFormValues> field="website" placeholder="https://my-website.com/" type="url"/>
           <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="website"/>
@@ -499,6 +539,138 @@ const WebsiteField = () => {
     </Collapse>
   </>
 }
+
+const CompanyHistoryField = () => <>
+  <Form.Label className="px-1">Tell us about the history of how this company came to be.</Form.Label>
+  <Form.FloatingLabel label="Company History">
+    <FieldControl<BusinessPlanFormValues> as="textarea" field="companyHistory" type="text" placeholder="History..."/>
+  </Form.FloatingLabel>
+</>
+
+const CompanySloganField = () => <>
+  <Form.Label className="px-1">Do you have a slogan, motto, or tagline that you'd like to include?</Form.Label>
+  <Form.FloatingLabel label="Company Slogan">
+    <FieldControl<BusinessPlanFormValues> as="textarea" field="companySlogan" type="text" placeholder="Slogan..."/>
+  </Form.FloatingLabel>
+</>
+
+const CompanyVisionField = () => <>
+  <Form.Label className="px-1">Describe the vision your company holds.</Form.Label>
+  <Form.FloatingLabel label="Company Vision">
+    <FieldControl<BusinessPlanFormValues> as="textarea" field="companyVision" type="text" placeholder="Vision..."/>
+  </Form.FloatingLabel>
+</>
+
+const CompanyMissionField = () => <>
+  <Form.Label className="px-1">Describe your company's mission.</Form.Label>
+  <Form.FloatingLabel label="Company Mission">
+    <FieldControl<BusinessPlanFormValues> as="textarea" field="companyMission" type="text" placeholder="Mission..."/>
+  </Form.FloatingLabel>
+</>
+
+const ProblemBusinessSolvesField = () => <>
+  <Form.Label className="px-1" required>
+    What are the problems that your business solves and how does your business solve it?
+  </Form.Label>
+  <Form.FloatingLabel label="Problems Business Solves">
+    <FieldControl<BusinessPlanFormValues> as="textarea" field="problemsBusinessSolves" type="text"
+                                          placeholder="Problems..."/>
+    <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="problemsBusinessSolves"/>
+  </Form.FloatingLabel>
+</>
+
+const ChallengesStartingBusinessField = () => <>
+  <Form.Label className="px-1">What are the challenges in starting and scaling your business?</Form.Label>
+  <Form.FloatingLabel label="Challenges Starting Business">
+    <FieldControl<BusinessPlanFormValues> as="textarea" field="challengesStartingBusiness" type="text"
+                                          placeholder="Challenges..."/>
+  </Form.FloatingLabel>
+</>
+
+const NumberOfFullTimeEmployeesField = () => <Form.FloatingLabel label="Number of Full Time Employees">
+  <FieldControl<BusinessPlanFormValues> field="numberOfFullTimeEmployees" type="text" placeholder="42"/>
+  <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="numberOfFullTimeEmployees"/>
+</Form.FloatingLabel>
+
+const NumberOfPartTimeEmployeesField = () => <Form.FloatingLabel label="Number of Part Time Employees">
+  <FieldControl<BusinessPlanFormValues> field="numberOfPartTimeEmployees" type="text" placeholder="42"/>
+  <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="numberOfPartTimeEmployees"/>
+</Form.FloatingLabel>
+
+const NumberOfContractorsField = () => <Form.FloatingLabel label="Number of Contractors">
+  <FieldControl<BusinessPlanFormValues> field="numberOfContractors" type="text" placeholder="42"/>
+  <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="numberOfContractors"/>
+</Form.FloatingLabel>
+
+const TargetMarketsField = () => <>
+  <Form.Label className="px-1">Who are your target markets?</Form.Label>
+  <FieldExpandingList<BusinessPlanFormValues>
+    withInvalidFeedback
+    placeholder="Target Market"
+    field="targetMarkets"
+    addButtonLabel="Add Target Market"
+  />
+</>
+
+const CompetitorOrganizationsField = () => <>
+  <Form.Label className="px-1">
+    Are there other organizations who you are competing with? If so please list them below.
+  </Form.Label>
+  <Form.FloatingLabel label="Competitors">
+    <FieldControl<BusinessPlanFormValues>
+      as="textarea"
+      field="competitors"
+      type="text"
+      placeholder="Competitors..."
+    />
+  </Form.FloatingLabel>
+</>
+
+const WhatMakesCompanyUniqueField = () => <>
+  <Form.Label className="px-1">What makes your company unique?</Form.Label>
+  <Form.FloatingLabel label="Competitors">
+    <FieldControl<BusinessPlanFormValues>
+      as="textarea"
+      field="whatMakesCompanyUnique"
+      type="text"
+      placeholder="We're special because..."
+    />
+  </Form.FloatingLabel>
+</>
+
+const IndustryRisksField = () => <>
+  <Form.Label className="px-1">
+    Name any risks inherent to your industry and how you overcome them.
+  </Form.Label>
+  <Form.FloatingLabel label="Competitors">
+    <FieldControl<BusinessPlanFormValues>
+      as="textarea"
+      field="industryRisks"
+      type="text"
+      placeholder="We get through because..."
+    />
+  </Form.FloatingLabel>
+</>
+
+const HasBudgetField = () => <FieldYesNo<BusinessPlanFormValues>
+  label="Do you have a budget?"
+  field="hasBudget"
+/>
+
+const UsesAccountingSoftwareField = () => <FieldYesNo<BusinessPlanFormValues>
+  label="Do you use accounting software?"
+  field="usesAccountingSoftware"
+/>
+
+const WorksWithAccountantOrBookkeeperField = () => <FieldYesNo<BusinessPlanFormValues>
+  label="Do you work with an accountant/bookkeeper?"
+  field="worksWithAccountantOrBookkeeper"
+/>
+
+const HasReceivedLoansField = () => <FieldYesNo<BusinessPlanFormValues>
+  label="Have you received any loans for this business?"
+  field="hasReceivedLoans"
+/>
 
 const BusinessPlanFormBody = (props: { preventSubmit: boolean }) => {
   const { submitForm } = useFormikContext<BusinessPlanFormValues>()
@@ -576,6 +748,64 @@ const BusinessPlanFormBody = (props: { preventSubmit: boolean }) => {
       <FormGroupRow>
         <FormGroupCol md={6} className="mb-3 mb-md-0" component={LogoField}/>
         <FormGroupCol md={6} component={WebsiteField}/>
+      </FormGroupRow>
+    </FormCategory>
+    <FormCategory title="Company Information">
+      <FormGroupRow>
+        <FormGroupCol xl={6} className="mb-3 mb-xl-0" component={CompanyHistoryField}/>
+        <FormGroupCol xl={6} component={CompanySloganField}/>
+      </FormGroupRow>
+      <FormGroupRow>
+        <FormGroupCol xl={6} className="mb-3 mb-xl-0" component={CompanyVisionField}/>
+        <FormGroupCol xl={6} component={CompanyMissionField}/>
+      </FormGroupRow>
+      <FormGroupRow>
+        <FormGroupCol component={ProblemBusinessSolvesField}/>
+      </FormGroupRow>
+      <FormGroupRow>
+        <FormGroupCol component={ChallengesStartingBusinessField}/>
+      </FormGroupRow>
+    </FormCategory>
+    <FormCategory title="Structure And Organization Information">
+      <FormGroupRow>
+        <FormGroupCol component={NumberOfFullTimeEmployeesField}/>
+      </FormGroupRow>
+      <FormGroupRow>
+        <FormGroupCol component={NumberOfPartTimeEmployeesField}/>
+      </FormGroupRow>
+      <FormGroupRow>
+        <FormGroupCol component={NumberOfContractorsField}/>
+      </FormGroupRow>
+    </FormCategory>
+    <FormCategory title="Marketing Information">
+      <FormGroupRow>
+        <FormGroupCol lg={10} component={TargetMarketsField}/>
+      </FormGroupRow>
+      <FormGroupRow>
+        <FormGroupCol component={CompetitorOrganizationsField}/>
+      </FormGroupRow>
+      <FormGroupRow>
+        <FormGroupCol component={CompetitorOrganizationsField}/>
+      </FormGroupRow>
+      <FormGroupRow>
+        <FormGroupCol component={WhatMakesCompanyUniqueField}/>
+      </FormGroupRow>
+      <FormGroupRow>
+        <FormGroupCol component={IndustryRisksField}/>
+      </FormGroupRow>
+    </FormCategory>
+    <FormCategory title="Finance Information">
+      <FormGroupRow>
+        <FormGroupCol component={HasBudgetField}/>
+      </FormGroupRow>
+      <FormGroupRow>
+        <FormGroupCol component={UsesAccountingSoftwareField}/>
+      </FormGroupRow>
+      <FormGroupRow>
+        <FormGroupCol component={WorksWithAccountantOrBookkeeperField}/>
+      </FormGroupRow>
+      <FormGroupRow>
+        <FormGroupCol component={HasReceivedLoansField}/>
       </FormGroupRow>
     </FormCategory>
     <Row>

@@ -88,6 +88,6 @@ export function FieldFileControl<F>(props: FieldFileControlProps<F>) {
     onChange={handleChange}
     onBlur={handleBlur}
     isValid={isValid || (values[field] !== null && touched[field] && !errors[field])}
-    isInvalid={isInvalid || (values[field] === null && touched[field] && !!errors[field])}
+    isInvalid={isInvalid || values[field] === null || (touched[field] && !!errors[field])}
   />
 }
