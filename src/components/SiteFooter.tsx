@@ -53,12 +53,12 @@ const SiteFooter = () =>
       <Col xs={12} sm={6} md={7} xl={8} xxl={9} className="mb-4 mb-sm-0">
         <span className="h5">Business Hours (CST)</span>
         <Row className="align-items-center">
-          <Col xs="auto">M, T, Th</Col>
-          <Col>8:30 AM - 6:30 PM</Col>
+          <Col xs={5}>Mon, Tue, Thu</Col>
+          <Col xs={7}>8:30 AM - 6:30 PM</Col>
         </Row>
         <Row className="align-items-center">
-          <Col xs="auto">Sat, Sun</Col>
-          <Col>9:00 AM - 1:00 PM</Col>
+          <Col xs={5}>Fri, Sat</Col>
+          <Col xs={7}>9:00 AM - 1:00 PM</Col>
         </Row>
       </Col>
       <FooterLinkCategory title="Links">
