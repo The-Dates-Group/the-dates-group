@@ -75,18 +75,14 @@ const matchesPhoneRegex: TestConfig<string> = {
 
 const formSchema = object({
   firstName: string().default<string>('').required('Please enter your first name'),
-
   lastName: string().default<string>('').required('Please enter your last name'),
-
   title: string().default<string>('').required('Please enter your title'),
-
   phoneNumber: string()
     .meta({ formType: 'tel' })
     .default<string>('')
     .transform(formatPhoneNumber)
     .required('Please enter your phone number')
     .test(matchesPhoneRegex),
-
   email: string()
     .meta({ formType: 'email' })
     .email('Please enter a valid email')
@@ -94,27 +90,22 @@ const formSchema = object({
     .required('Please enter your email'),
 
   businessName: string().default<string>('').required('Please enter your business name'),
-
   businessPhoneNumber: string()
     .meta({ formType: 'tel' })
     .default<string>('')
     .transform(formatPhoneNumber)
     .required('Please enter your business phone number')
     .test(matchesPhoneRegex),
-
   businessStructure: string<BusinessStructure | string>()
     .default<string>('')
     .required('Please specify your business structure'),
-
   businessStage: string<BusinessStage | string>()
     .default<string>('')
     .required('Please specify your business structure'),
-
   dateBusinessStarted: string()
     .meta({ formType: 'date' })
     .default<string>('')
     .required('Please specify when your business started! If you are unsure of the exact date, an estimate is fine.'),
-
   professionalLicenses: array(string().default<string>(''))
     .default<string[]>([])
     .test({
@@ -122,10 +113,8 @@ const formSchema = object({
       message: 'Please provide a license for each field',
       test: (value: string[]) => typeof value.find(item => item.length === 0) === 'undefined'
     }),
-
   interestedInFederalContractCertification: boolean().default<boolean>(false).required(),
   appliedForCertificationsInThePast: boolean().default<boolean>(false).required(),
-
   hasFranchiseAgreement: boolean().default<boolean>(false).required(),
   franchiseAgreement: file()
     .meta({ formType: 'file' })
@@ -134,7 +123,6 @@ const formSchema = object({
         schema.nonNullable().required('Please upload your franchise agreement documentation').test(pdfTest) :
         schema.nullable().default<File | null>(null)
     ),
-
   organizationBonded: boolean().default<boolean>(false).required(),
   proofOfBondingCapacity: file()
     .meta({ formType: 'file' })
@@ -143,7 +131,6 @@ const formSchema = object({
         schema.nonNullable().required('Please upload your proof of bonding capacity').test(pdfTest) :
         schema.nullable().default<File | null>(null)
     ),
-
   hasBusinessLicense: boolean().default<boolean>(false).required(),
   businessLicense: file()
     .meta({ formType: 'file' })
@@ -172,15 +159,15 @@ const formSchema = object({
         schema.nullable().default<File | null>(null)
     ),
   interestedInLogoServices: boolean().default<boolean>(false),
-
   hasWebsite: boolean().default<boolean>(false).required(),
   website: string()
     .url('Not a valid URL')
     .meta({ formType: 'url' })
+    .default<string>('')
     .when(['hasWebsite'], (values, schema, { parent }) =>
       parent && parent.hasWebsite ?
-        schema.nonNullable().required('Please enter the URL of your website') :
-        schema.default<string>('')
+        schema.required('Please enter the URL of your website') :
+        schema
     ),
   interestedInWebsiteServices: boolean().default<boolean>(false),
 
@@ -200,6 +187,30 @@ const formSchema = object({
     .default<string>('')
     .required('Please enter the number of part time employees you have'),
   numberOfContractors: string().default<string>(''),
+
+  hasPurchasedBusinessPlan: boolean().default<boolean>(false),
+  profilePic: file()
+    .meta({ formType: 'file' })
+    .when(['hasPurchasedBusinessPlan'], (values, schema, { parent }) =>
+      parent && parent.hasPurchasedBusinessPlan ?
+        schema.nonNullable().required('Please upload your profile picture') :
+        schema.nullable().default<File | null>(null)
+    ),
+  wagesAndSalaries: string()
+    .default<string>('')
+    .when(['hasPurchasedBusinessPlan'], (values, schema, { parent }) =>
+      parent && parent.hasPurchasedBusinessPlan ?
+        schema.required('Please enter your wages and salaries') :
+        schema
+    ),
+  boardMembers: string().default<string>(''),
+  lastThreeClients: string()
+    .default<string>('')
+    .when(['hasPurchasedBusinessPlan'], (values, schema, { parent }) =>
+      parent && parent.hasPurchasedBusinessPlan ?
+        schema.required('Please enter your last three clients') :
+        schema
+    ),
 
   targetMarkets: array(string().default<string>(''))
     .default<string[]>([])
@@ -342,7 +353,7 @@ const BusinessPhoneNumberField = () => <Form.FloatingLabel label="Business Phone
 </Form.FloatingLabel>
 
 const BusinessStructureField = () => <>
-  <Form.Label className="px-1" required>What is the structure of your business?</Form.Label>
+  <Form.Label className="px-1" required>What your business structure?</Form.Label>
   <Form.FloatingLabel label="Business Structure">
     <FieldSelectionWithOther<BusinessPlanFormValues>
       type="text"
@@ -621,6 +632,90 @@ const NumberOfContractorsField = () => <Form.FloatingLabel label="Number of Cont
   <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="numberOfContractors"/>
 </Form.FloatingLabel>
 
+const HasPurchasedBusinessPlanField = () => {
+  const { setFieldValue, setFieldTouched, values } = useFormikContext<BusinessPlanFormValues>()
+
+  const handleExpand = (value: boolean) => {
+    setFieldValue('hasPurchasedBusinessPlan', value, false)
+    setFieldTouched('hasPurchasedBusinessPlan', true, false)
+    if(!value) {
+      setFieldValue('profilePic', null, false)
+      setFieldValue('wagesAndSalaries', '', false)
+      setFieldValue('boardMembers', '', false)
+      setFieldValue('lastThreeClients', '', false)
+      setFieldTouched('profilePic', false, false)
+      setFieldTouched('wagesAndSalaries', false, false)
+      setFieldTouched('boardMembers', false, false)
+      setFieldTouched('lastThreeClients', false, true)
+    }
+  }
+
+  return <>
+    <Form.Label as="p" className="mb-2">Have you purchased a business plan through The Dates Group?</Form.Label>
+    <YesNoController idPrefix="has-purchased-business-plan" onExpand={handleExpand}/>
+    <Collapse in={values.hasPurchasedBusinessPlan}>
+      <div>
+        <FormGroupRow>
+          <FormGroupCol>
+            <Form.Label className="px-1" required>
+              Please upload a profile picture for your business plan.
+            </Form.Label>
+            <FieldFileControl<BusinessPlanFormValues> field="profilePic"/>
+            <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="profilePic"/>
+          </FormGroupCol>
+        </FormGroupRow>
+        <FormGroupRow>
+          <FormGroupCol>
+            <Form.Label className="px-1" required>
+              List wages and salaries for leadership and employees.
+            </Form.Label>
+            <Form.FloatingLabel label="Wages and Salaries">
+              <FieldControl<BusinessPlanFormValues>
+                as="textarea"
+                field="wagesAndSalaries"
+                type="text"
+                placeholder="Wages and Salaries..."
+              />
+              <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="wagesAndSalaries"/>
+            </Form.FloatingLabel>
+          </FormGroupCol>
+        </FormGroupRow>
+        <FormGroupRow>
+          <FormGroupCol>
+            <Form.Label className="px-1">
+              List any board members or advisory team members name, title, and email address.
+            </Form.Label>
+            <Form.FloatingLabel label="Board Members">
+              <FieldControl<BusinessPlanFormValues>
+                as="textarea"
+                field="boardMembers"
+                type="text"
+                placeholder="Board Members..."
+              />
+            </Form.FloatingLabel>
+          </FormGroupCol>
+        </FormGroupRow>
+        <FormGroupRow>
+          <FormGroupCol>
+            <Form.Label className="px-1" required>
+              List last 3 clients. State business name and contact person.
+            </Form.Label>
+            <Form.FloatingLabel label="Last Three Clients">
+              <FieldControl<BusinessPlanFormValues>
+                as="textarea"
+                field="lastThreeClients"
+                type="text"
+                placeholder="Last Three Clients..."
+              />
+              <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="lastThreeClients"/>
+            </Form.FloatingLabel>
+          </FormGroupCol>
+        </FormGroupRow>
+      </div>
+    </Collapse>
+  </>
+}
+
 const TargetMarketsField = () => <>
   <Form.Label className="px-1">Who are your target markets?</Form.Label>
   <FieldExpandingList<BusinessPlanFormValues>
@@ -860,6 +955,11 @@ const BusinessPlanFormBody = (props: { preventSubmit: boolean }) => {
       </FormGroupRow>
       <FormGroupRow>
         <FormGroupCol component={NumberOfContractorsField}/>
+      </FormGroupRow>
+    </FormCategory>
+    <FormCategory title="Business Plan Information">
+      <FormGroupRow>
+        <FormGroupCol component={HasPurchasedBusinessPlanField}/>
       </FormGroupRow>
     </FormCategory>
     <FormCategory title="Marketing Information">
