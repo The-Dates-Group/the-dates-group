@@ -50,7 +50,17 @@ const FooterLink = (props: FooterLinkProps) =>
 const SiteFooter = () =>
   <Container fluid as="footer" className={styles['site-footer']}>
     <Row>
-      <Col xs="auto" sm={6} md={7} xl={8} xxl={9} className="p-0 p-sm-2"/>
+      <Col xs={12} sm={6} md={7} xl={8} xxl={9} className="mb-4 mb-sm-0">
+        <span className="h5">Business Hours (CST)</span>
+        <Row className="align-items-center">
+          <Col xs="auto">M, T, Th</Col>
+          <Col>8:30 AM - 6:30 PM</Col>
+        </Row>
+        <Row className="align-items-center">
+          <Col xs="auto">Sat, Sun</Col>
+          <Col>9:00 AM - 1:00 PM</Col>
+        </Row>
+      </Col>
       <FooterLinkCategory title="Links">
         <FooterLink href="/" label="Home" rel="alternate"/>
         <FooterLink href="/services" label="Services" rel="alternate" target="_self"/>
@@ -70,7 +80,6 @@ const SiteFooter = () =>
           />
         )}
       </FooterLinkCategory>
-      <Col xs="auto" className="p-0 p-sm-2"/>
     </Row>
   </Container>
 
