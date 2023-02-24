@@ -220,7 +220,18 @@ const formSchema = object({
 
   worksWithAccountantOrBookkeeper: boolean().default<boolean>(false),
 
-  hasReceivedLoans: boolean().default<boolean>(false)
+  hasReceivedLoans: boolean().default<boolean>(false),
+
+  productsAndServices: string().default<string>(''),
+
+  maintainedEquipment: string().default<string>(''),
+
+  recurringExpenses: string().default<string>(''),
+
+  investedFunds: string().default<string>(''),
+
+  hasPursuedGrantWritingOrCrowdfunding: boolean().default<boolean>(false),
+  planningToSeekFunding: boolean().default<boolean>(false)
 })
 
 type BusinessPlanFormValues = ReturnType<typeof formSchema.getDefault>
@@ -573,8 +584,12 @@ const ProblemBusinessSolvesField = () => <>
     What are the problems that your business solves and how does your business solve it?
   </Form.Label>
   <Form.FloatingLabel label="Problems Business Solves">
-    <FieldControl<BusinessPlanFormValues> as="textarea" field="problemsBusinessSolves" type="text"
-                                          placeholder="Problems..."/>
+    <FieldControl<BusinessPlanFormValues>
+      as="textarea"
+      field="problemsBusinessSolves"
+      type="text"
+      placeholder="Problems..."
+    />
     <FieldInvalidFeedbackCollapse<BusinessPlanFormValues> field="problemsBusinessSolves"/>
   </Form.FloatingLabel>
 </>
@@ -582,8 +597,12 @@ const ProblemBusinessSolvesField = () => <>
 const ChallengesStartingBusinessField = () => <>
   <Form.Label className="px-1">What are the challenges in starting and scaling your business?</Form.Label>
   <Form.FloatingLabel label="Challenges Starting Business">
-    <FieldControl<BusinessPlanFormValues> as="textarea" field="challengesStartingBusiness" type="text"
-                                          placeholder="Challenges..."/>
+    <FieldControl<BusinessPlanFormValues>
+      as="textarea"
+      field="challengesStartingBusiness"
+      type="text"
+      placeholder="Challenges..."
+    />
   </Form.FloatingLabel>
 </>
 
@@ -670,6 +689,72 @@ const WorksWithAccountantOrBookkeeperField = () => <FieldYesNo<BusinessPlanFormV
 const HasReceivedLoansField = () => <FieldYesNo<BusinessPlanFormValues>
   label="Have you received any loans for this business?"
   field="hasReceivedLoans"
+/>
+
+const ProductsAndServicesField = () => <>
+  <Form.Label className="px-1">
+    Please list your products and services.
+  </Form.Label>
+  <Form.FloatingLabel label="Products And Services">
+    <FieldControl<BusinessPlanFormValues>
+      as="textarea"
+      field="productsAndServices"
+      type="text"
+      placeholder="Products And Services..."
+    />
+  </Form.FloatingLabel>
+</>
+
+const MaintainedEquipmentField = () => <>
+  <Form.Label className="px-1">
+    Please list any equipment, owned or leased. State description, year acquired, current estimate value.
+  </Form.Label>
+  <Form.FloatingLabel label="Maintained Equipment">
+    <FieldControl<BusinessPlanFormValues>
+      as="textarea"
+      field="maintainedEquipment"
+      type="text"
+      placeholder="Equipment..."
+    />
+  </Form.FloatingLabel>
+</>
+
+const RecurringExpensesField = () => <>
+  <Form.Label className="px-1">
+    Please list any recurring expenses (IE: rent, software subscriptions, utilities)
+  </Form.Label>
+  <Form.FloatingLabel label="Recurring Expenses">
+    <FieldControl<BusinessPlanFormValues>
+      as="textarea"
+      field="recurringExpenses"
+      type="text"
+      placeholder="Expenses..."
+    />
+  </Form.FloatingLabel>
+</>
+
+const InvestedFundsField = () => <>
+  <Form.Label className="px-1">
+    Please list what funds you have invested in the startup of your business.
+  </Form.Label>
+  <Form.FloatingLabel label="Invested Funds">
+    <FieldControl<BusinessPlanFormValues>
+      as="textarea"
+      field="investedFunds"
+      type="text"
+      placeholder="Investments..."
+    />
+  </Form.FloatingLabel>
+</>
+
+const HasPursuedGrantWritingOrCrowdfundingField = () => <FieldYesNo<BusinessPlanFormValues>
+  label="Have you pursued grant writing or crowdfunding in the past?"
+  field="hasPursuedGrantWritingOrCrowdfunding"
+/>
+
+const PlanningToSeekFundingField = () => <FieldYesNo<BusinessPlanFormValues>
+  label="Are you planning to seek funding for your business?"
+  field="planningToSeekFunding"
 />
 
 const BusinessPlanFormBody = (props: { preventSubmit: boolean }) => {
@@ -806,6 +891,24 @@ const BusinessPlanFormBody = (props: { preventSubmit: boolean }) => {
       </FormGroupRow>
       <FormGroupRow>
         <FormGroupCol component={HasReceivedLoansField}/>
+      </FormGroupRow>
+      <FormGroupRow>
+        <FormGroupCol component={ProductsAndServicesField}/>
+      </FormGroupRow>
+      <FormGroupRow>
+        <FormGroupCol component={MaintainedEquipmentField}/>
+      </FormGroupRow>
+      <FormGroupRow>
+        <FormGroupCol component={RecurringExpensesField}/>
+      </FormGroupRow>
+      <FormGroupRow>
+        <FormGroupCol component={InvestedFundsField}/>
+      </FormGroupRow>
+      <FormGroupRow>
+        <FormGroupCol component={HasPursuedGrantWritingOrCrowdfundingField}/>
+      </FormGroupRow>
+      <FormGroupRow>
+        <FormGroupCol component={PlanningToSeekFundingField}/>
       </FormGroupRow>
     </FormCategory>
     <Row>
