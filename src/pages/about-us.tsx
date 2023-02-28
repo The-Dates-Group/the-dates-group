@@ -27,6 +27,7 @@ import cynthiaMcMillanImg from '@/images/staff/cynthia-mcmillan.webp'
 import maggyFoucheImg from '@/images/staff/maggy-fouche.webp'
 import lisaGreenImg from '@/images/staff/lisa-green.webp'
 
+import certifiedQuickbooksProadvisorLogo from '@/images/associations/certified-quickbooks-proadvisor-logo.webp'
 import femaleFounderCollectiveLogo from '@/images/associations/female-founder-collective-logo.webp'
 import grantProfessionalsAssociationLogo from '@/images/associations/grant-professionals-association-logo.webp'
 import nationalNotaryAssociationLogo from '@/images/associations/national-notary-association-logo.webp'
@@ -36,14 +37,14 @@ import nationalSmallBusinessAssociationLogo from '@/images/associations/national
 type AssociationLogoProps = {
   name: string
   src: StaticImageData
-  url: string
+  url?: string
 }
 
 function AssociationLogo(props: AssociationLogoProps) {
   return (
-    <Col>
+    <Col className="position-relative">
       <Image src={props.src} alt={`${props.name} logo`} className="card-img"/>
-      <a href={props.url} className="stretched-link" target="_blank" rel="noreferrer"></a>
+      {props.url && <a href={props.url} className="stretched-link" target="_blank" rel="noreferrer"></a>}
     </Col>
   )
 }
@@ -167,6 +168,10 @@ const AboutUs = () =>
         </Card.Header>
         <Card.Body>
           <Row xs={2} md={3} xl={6}>
+            <AssociationLogo
+              name="certified quickbooks proadvisor"
+              src={certifiedQuickbooksProadvisorLogo}
+            />
             <AssociationLogo
               name="female founder collective"
               src={femaleFounderCollectiveLogo}

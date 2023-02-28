@@ -28,37 +28,25 @@ import FieldInvalidFeedbackCollapse from '@/components/forms/FieldInvalidFeedbac
 const formSchema = object({
   name: string()
     .default<string>('')
-    .required('Please enter your name')
-    .trim()
-    .meta({ formType: 'text' }),
+    .meta({ formType: 'text' })
+    .required('Please enter your name'),
   email: string()
     .default<string>('')
+    .meta({ formType: 'email' })
     .email('Please provide a valid email address')
     .required('Please enter your email address')
-    .trim()
-    .meta({ formType: 'email' }),
-  subject: string()
-    .default<string>('')
-    .required('Please provide a subject')
-    .trim()
-    .meta({ formType: 'text' }),
-  message: string()
-    .default<string>('')
-    .required('Please provide a message')
-    .trim()
-    .meta({ formType: 'text' })
 })
 
 const initialValues = formSchema.getDefault()
 
-type MessageUsFormValues = typeof initialValues
+type SignUpForNewsletterFormValues = typeof initialValues
 
-export default function MessageUsForm() {
+export default function SignUpForNewsletterForm() {
   const router = useRouter()
-  const [form, submissionState] = useFormSubmission<MessageUsFormValues>('Message Us Form')
+  const [form, submissionState] = useFormSubmission<SignUpForNewsletterFormValues>('Sign Up For Newsletter Form')
   const [state, setState] = useState({ showResultModal: false })
 
-  const handleFormSubmit = async (values: MessageUsFormValues) => {
+  const handleFormSubmit = async (values: SignUpForNewsletterFormValues) => {
     values = await formSchema.validate(values)
     await form.submit(values)
     setState(fromPrevState({ showResultModal: true }))
@@ -85,29 +73,25 @@ export default function MessageUsForm() {
         {submissionState.isSuccess ? 'Thank you!' : 'Uh Oh!'}
       </Modal.Header>
       <Modal.Body as="p" className="text-center mb-0">
-        {submissionState.isSuccess ? 'Your message was submitted!' : 'Something went wrong, try again later!'}
+        {submissionState.isSuccess ? 'You\'re all set!' : 'Something went wrong, try again later!'}
       </Modal.Body>
     </Modal>
-    <Formik<MessageUsFormValues>
+    <Formik<SignUpForNewsletterFormValues>
       validateOnMount
       validationSchema={formSchema}
       initialValues={initialValues}
       onSubmit={handleFormSubmit}
-      component={MessageUsFormBody}/>
+      component={SignUpForNewsletterFormBody}/>
   </Card.Body>
 }
 
-const MessageUsFormBody = ({ submitForm }: FormikProps<MessageUsFormValues>) =>
+const SignUpForNewsletterFormBody = ({ submitForm }: FormikProps<SignUpForNewsletterFormValues>) =>
   <Form noValidate className="d-flex flex-column">
     <FormGroupRow>
-      <FormGroupCol md={6} className="mb-3 mb-md-0" component={NameField}/>
-      <FormGroupCol md={6} component={EmailField}/>
+      <FormGroupCol component={NameField}/>
     </FormGroupRow>
     <FormGroupRow>
-      <FormGroupCol component={SubjectField}/>
-    </FormGroupRow>
-    <FormGroupRow>
-      <FormGroupCol component={MessageField}/>
+      <FormGroupCol component={EmailField}/>
     </FormGroupRow>
     <Button className="flex-fill" type="button" variant="dates-primary" onClick={submitForm}>
       Submit
@@ -116,24 +100,12 @@ const MessageUsFormBody = ({ submitForm }: FormikProps<MessageUsFormValues>) =>
 
 const NameField = () =>
   <Form.FloatingLabel label="Name">
-    <FieldControl<MessageUsFormValues> field="name" type="text" placeholder="John Smith"/>
-    <FieldInvalidFeedbackCollapse<MessageUsFormValues> field="name"/>
+    <FieldControl<SignUpForNewsletterFormValues> field="name" type="text" placeholder="John Smith"/>
+    <FieldInvalidFeedbackCollapse<SignUpForNewsletterFormValues> field="name"/>
   </Form.FloatingLabel>
 
 const EmailField = () =>
   <Form.FloatingLabel label="Email">
-    <FieldControl<MessageUsFormValues> field="email" type="email" placeholder="Email"/>
-    <FieldInvalidFeedbackCollapse<MessageUsFormValues> field="email"/>
-  </Form.FloatingLabel>
-
-const SubjectField = () =>
-  <Form.FloatingLabel label="Subject">
-    <FieldControl<MessageUsFormValues> field="subject" type="text" placeholder="A Message"/>
-    <FieldInvalidFeedbackCollapse<MessageUsFormValues> field="subject"/>
-  </Form.FloatingLabel>
-
-const MessageField = () =>
-  <Form.FloatingLabel label="Message">
-    <FieldControl<MessageUsFormValues> as="textarea" field="message" type="text" placeholder="Hello!"/>
-    <FieldInvalidFeedbackCollapse<MessageUsFormValues> field="message"/>
+    <FieldControl<SignUpForNewsletterFormValues> field="email" type="email" placeholder="Email"/>
+    <FieldInvalidFeedbackCollapse<SignUpForNewsletterFormValues> field="email"/>
   </Form.FloatingLabel>

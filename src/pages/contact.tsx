@@ -16,17 +16,17 @@
 import { useEffect, useState } from 'react'
 import { Card, Nav, Tab } from 'react-bootstrap'
 import Page from '@/components/Page'
-import MessageUsForm from '@/components/MessageUsForm'
+import SignUpForNewsletterForm from '@/components/SignUpForNewsletterForm'
 import ScheduleCalendar from '@/components/ScheduleCalendar'
 import { useRouter } from 'next/router'
 
-type TabKey = 'send-a-message' | 'schedule-a-call'
+type TabKey = 'sign-up-for-newsletter' | 'schedule-a-call'
 
 const tabs = [
   {
-    title: 'Send A Message',
-    key: 'send-a-message',
-    Component: MessageUsForm
+    title: 'Sign Up For Newsletter',
+    key: 'sign-up-for-newsletter',
+    Component: SignUpForNewsletterForm
   },
   {
     title: 'Schedule A Call',
@@ -35,7 +35,7 @@ const tabs = [
   }
 ]
 
-const defaultActiveKey: TabKey = 'send-a-message'
+const defaultActiveKey: TabKey = 'sign-up-for-newsletter'
 
 export default function ContactPage() {
   const { asPath } = useRouter()
@@ -44,7 +44,7 @@ export default function ContactPage() {
     if(typeof selectedKey === 'undefined') {
       const pathParts = asPath.split('#', 2)
       const activeKey = pathParts.length === 1 ?
-        defaultActiveKey : pathParts[1] === 'send-a-message' || pathParts[1] === 'schedule-a-call' ?
+        defaultActiveKey : pathParts[1] === 'sign-up-for-newsletter' || pathParts[1] === 'schedule-a-call' ?
           pathParts[1] : defaultActiveKey
       setSelectedKey(activeKey)
     }
