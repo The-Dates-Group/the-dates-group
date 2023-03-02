@@ -88,7 +88,7 @@ export class FormSubmission<F extends object> {
   }
 
   private createFormUrlEncoded(form: F): any {
-    const body = { 'form-data': this.name } as any
+    const body = { 'form-name': this.name } as any
     for(const key of Object.keys(form)) {
       const value = convertValueForFormSubmission((form as any)[key], false)
       const formattedKey = FormSubmission.formatFieldName(key)
