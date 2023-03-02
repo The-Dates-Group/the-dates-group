@@ -27,12 +27,15 @@ import cynthiaMcMillanImg from '@/images/staff/cynthia-mcmillan.webp'
 import maggyFoucheImg from '@/images/staff/maggy-fouche.webp'
 import lisaGreenImg from '@/images/staff/lisa-green.webp'
 
+import afpLogo from '@/images/associations/afp-logo.webp'
 import certifiedQuickbooksProadvisorLogo from '@/images/associations/certified-quickbooks-proadvisor-logo.webp'
 import femaleFounderCollectiveLogo from '@/images/associations/female-founder-collective-logo.webp'
 import grantProfessionalsAssociationLogo from '@/images/associations/grant-professionals-association-logo.webp'
 import nationalNotaryAssociationLogo from '@/images/associations/national-notary-association-logo.webp'
 import the10thHouseLogo from '@/images/associations/the-10th-house-logo.webp'
 import nationalSmallBusinessAssociationLogo from '@/images/associations/national-small-business-association-logo.webp'
+import willowbrookBurrRidgeChamberOfCommerceAndIndustryLogo
+  from '@/images/associations/willowbrook-burr-ridge-chamber-of-commerce-and-industry-logo.webp'
 
 type AssociationLogoProps = {
   name: string
@@ -167,7 +170,12 @@ const AboutUs = () =>
           Proud Members Of
         </Card.Header>
         <Card.Body>
-          <Row xs={2} md={3} xl={6}>
+          <Row xs={2} md={3} xl={5} className="justify-content-around">
+            <AssociationLogo
+              name="afp"
+              src={afpLogo}
+              url="https://afpglobal.org/"
+            />
             <AssociationLogo
               name="certified quickbooks proadvisor"
               src={certifiedQuickbooksProadvisorLogo}
@@ -196,6 +204,11 @@ const AboutUs = () =>
               name="national small business association"
               src={nationalSmallBusinessAssociationLogo}
               url="https://www.nsba.biz/"
+            />
+            <AssociationLogo
+              name="willowbrook burr ridge chamber of commerce and industry"
+              src={willowbrookBurrRidgeChamberOfCommerceAndIndustryLogo}
+              url="https://www.wbbrchamber.org/"
             />
           </Row>
         </Card.Body>
