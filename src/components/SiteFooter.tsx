@@ -56,9 +56,22 @@ const SiteFooter = () =>
           <Col xs={5}>Mon, Tue, Thu</Col>
           <Col xs={7}>8:30 AM - 6:30 PM</Col>
         </Row>
-        <Row className="align-items-center">
+        <Row className="align-items-center mb-4">
           <Col xs={5}>Fri, Sat</Col>
           <Col xs={7}>9:00 AM - 1:00 PM</Col>
+        </Row>
+        <Row className="mb-1">
+          <span className="h5">Information</span>
+          <Col>
+            <span className="dates-text-light">Phone - </span>
+            <a href="tel:8005504951" className={styles['footer-link']}>800.550.4951</a>
+          </Col>
+        </Row>
+        <Row>
+          <Col>
+            <span className="dates-text-light">E-Mail - </span>
+            <a href="mailto:info@thedatesgroup.com" className={styles['footer-link']}>info@thedatesgroup.com</a>
+          </Col>
         </Row>
       </Col>
       <FooterLinkCategory title="Links">

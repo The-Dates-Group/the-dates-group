@@ -26,12 +26,14 @@
     margin-bottom: 0.5rem;
     align-items: center;
     position: relative;
-    .footer-link {
-      padding: 0;
-      color: dates-text-color(light);
-      &:hover {
-        color: dates-text-color(light-2);
-      }
-    }
+  }
+}
+
+.footer-link {
+  padding: 0;
+  color: dates-text-color(light);
+  text-decoration: none;
+  &:hover {
+    color: dates-text-color(light-2);
   }
 }
