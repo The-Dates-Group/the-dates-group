@@ -22,6 +22,11 @@ const nextConfig = {
       source: '/team',
       destination: '/about-us#our-team',
       permanent: true
+    },
+    {
+      source: '/schedule-a-call',
+      destination: '/contact#schedule-a-call',
+      permanent: true
     }
   ]
 }
