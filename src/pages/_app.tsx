@@ -30,6 +30,7 @@ import meta from '@/data/meta.json'
 import { ErrorBoundary } from 'next/dist/client/components/error-boundary'
 import Page from '@/components/Page'
 import { Card } from 'react-bootstrap'
+import { useRouter } from 'next/router'
 
 type PageMetaData = {
   readonly name?: string
@@ -60,7 +61,7 @@ const ErrorPage = (props: { error: Error }) => {
 }
 
 export default function App({ Component, pageProps }: AppProps<AppStaticProps>) {
-  // const router = useRouter()
+  const router = useRouter()
   const requester = axios.create({
     headers: {
       'Content-Type': 'application/json'
@@ -81,7 +82,7 @@ export default function App({ Component, pageProps }: AppProps<AppStaticProps>) 
           <link rel="icon" href="/favicon.ico"/>
           <link rel="apple-touch-icon" href="/images/logo/logo_192x192.png"/>
           <link rel="manifest" href="/manifest.json"/>
-          {/* TODO might be worth uncommenting later {isProduction && <link rel="canonical" href={deploymentUrl + router.pathname}/>}*/}
+          {isProduction && <link rel="canonical" href={deploymentUrl + router.pathname}/>}
           <title>The Dates Group</title>
 
           <meta name="viewport" content="width=device-width, initial-scale=1"/>
