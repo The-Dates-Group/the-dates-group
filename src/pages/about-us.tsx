@@ -24,7 +24,7 @@ import chiDatesImg from '@/images/staff/chi-dates.webp'
 import melissaWalterImg from '@/images/staff/melissa-walter.webp'
 import jodiDoaneImg from '@/images/staff/jodi-doane.webp'
 import cynthiaMcMillanImg from '@/images/staff/cynthia-mcmillan.webp'
-import maggyFoucheImg from '@/images/staff/maggy-fouche.webp'
+import brittanyVaughanImg from '@/images/staff/brittany-vaughan.webp'
 import lisaGreenImg from '@/images/staff/lisa-green.webp'
 
 import afpLogo from '@/images/associations/afp-logo.webp'
@@ -146,18 +146,23 @@ const AboutUs = () =>
               </Card.Text>
             </TeamMemberCard>
             <TeamMemberCard
-              name="Maggy Fouché"
-              occupation="Grant Writer"
-              src={maggyFoucheImg}
+              name="Brittany Vaughan"
+              occupation="Grant Writer | Business Plan Writer"
+              src={brittanyVaughanImg}
               direction="image-right">
               <Card.Text>
-                Maggy Fouché has had a successful career as a corporate marketing manager with personal care companies
-                across the country, including Alberto Culver in the Chicago area. She held marketing positions with the
-                Chicago Department of Cultural Affairs, where she managed marketing and audience development for the
-                Grant Park Music Festival, the Chicago Cultural Center, and city-wide events such as Chicago Artists
-                Month and Chicago Summer Dance. Since 2017, Maggy has combined her marketing acumen and love of the arts
-                as a consultant in grant writing and fundraising. She is a board member of the Chicago chapter of the
-                Grant Professionals Association and has an MBA from the University of Southern California.
+                Brittany (Britt) Vaughan is an experienced nonprofit professional with expertise in grants management,
+                outcome measurement, strategic planning, and relationship management. She takes pride in her
+                demonstrated ability to be an inspiring, yet planful agent of change for her nonprofit partners. Driven
+                in her professional and personal life to help others empower themselves, Britt serves on several local
+                boards, committees, and organizations. Britt is also passionate about building a better world for women
+                and girls, currently serving as a director for Zonta International and the Zonta Foundation for Women, a
+                human rights organization holding General Consultative Status with the United Nations. Ms. Vaughan has
+                been recognized by Business Life Magazine as a “Woman Achiever”; is the recipient of a Robert Woodruff
+                Fellowship; and has received a Congressional Recognition for Service to Community from United States
+                House of Representatives Congressman Adam Schiff. Britt is a Los Angeles native who in her free time,
+                stays busy through travel, life-long learning, entertaining friends, getting crafty, and discovering
+                great food.
               </Card.Text>
             </TeamMemberCard>
           </MediaQuery.Provider>
