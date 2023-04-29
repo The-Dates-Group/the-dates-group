@@ -36,9 +36,8 @@ export default function ScheduleCalendar() {
       autoResize={true}
       loading="lazy"
       checkOrigin={false} // maybe not the smartest idea to just not check, but I'll look into this later
-      src="https://api.leadconnectorhq.com/widget/appointment/service/2?group=chidates"
+      src="https://calendly.com/datesgroup"
       onLoad={onIFrameLoaded}
-      className="flex-fill"
     />
   </div>
 }

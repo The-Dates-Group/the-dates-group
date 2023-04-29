@@ -18,6 +18,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  height: 600px;
+  @media (min-width: 1200px) {
+    height: 800px;
+  }
   .iframe-loading-spinner {
     z-index: 1; // this should lay on top of the iframe area
     position: absolute;
